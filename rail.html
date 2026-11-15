@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>Rail</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Archivo:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a signalman's desk. A kraft-paper map table with ruler marks along the edge. The track board is
+   a cast-iron plate covered in gravel, and the routes are drawn on it as sleepers and steel rails in six
+   colours. On a wide screen the route card (a punched ticket) sits to the right of the board with the
+   buttons, clock and record. On a phone the board comes first and the ticket drops under it. */
+:root {
+  --kraft: #d8c49b; --kraft2: #c3ad7f; --iron: #25282c; --iron2: #14161a; --ink: #2b2418; --cream: #f2e8d0; --stamp: #b3342a;
+  --c0: #e0472f; --c1: #2f74d6; --c2: #eab730; --c3: #2f9e62; --c4: #ef8a24; --c5: #9552c6; --c6: #19a3b0;
+  --head: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif; --body: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); --grain: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--kraft2); }
+body {
+  margin: 0; min-height: 100dvh; color: var(--ink); font: 500 17px/1.45 var(--body); position: relative; overflow-x: clip;
+  background:
+    var(--grain),
+    repeating-linear-gradient(90deg, rgba(60, 40, 10, 0.5) 0 1px, transparent 1px 12px) 0 0 / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, rgba(60, 40, 10, 0.55) 0 1px, transparent 1px 60px) 0 0 / 100% 16px no-repeat,
+    repeating-linear-gradient(0deg, rgba(60, 40, 10, 0.5) 0 1px, transparent 1px 12px) 0 0 / 10px 100% no-repeat,
+    radial-gradient(90% 70% at 40% 20%, rgba(255, 245, 215, 0.55), transparent 70%),
+    radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(80, 50, 10, 0.4)),
+    linear-gradient(#d9c69f, var(--kraft));
+  padding-block: 0 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3, p, ol { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid #2f74d6; outline-offset: 2px; }
+.wrap { position: relative; max-width: 1180px; margin: 0 auto; }
+.coffee { position: absolute; right: 4%; top: 150px; width: 120px; height: 120px; border-radius: 50%; pointer-events: none; border: 3px solid rgba(110, 70, 30, 0.25); box-shadow: inset 0 0 12px rgba(110, 70, 30, 0.18); background: radial-gradient(circle, transparent 60%, rgba(110, 70, 30, 0.12) 100%); }
+
+/* ---------- top ---------- */
+.top { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 24px; padding: 26px 0 18px; }
+.plate { position: relative; padding: 10px 38px 10px; color: #f1e4c0; background: var(--grain), linear-gradient(160deg, #3a3e44, var(--iron2)); border-radius: 4px; box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 4px #8d8f93, inset 0 2px 0 rgba(255, 255, 255, 0.14), 0 12px 18px -6px rgba(40, 20, 0, 0.6); }
+.plate::before, .plate::after { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c8cacd, #43474c 70%); box-shadow: 0 1px 1px #000; }
+.plate::before { left: 12px; } .plate::after { right: 12px; }
+.plate h1 { font: 700 clamp(2.1rem, 5vw, 3rem)/1 var(--head); letter-spacing: 0.18em; text-transform: uppercase; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.15); }
+.plate p { font: 600 0.74rem/1.2 var(--body); letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.8; margin-top: 5px; }
+.tools { display: flex; align-items: center; gap: 14px; margin-left: auto; flex-wrap: wrap; }
+.tags { display: flex; gap: 10px; }
+.tag { position: relative; cursor: pointer; padding: 11px 18px 9px 30px; font: 700 0.95rem/1 var(--head); letter-spacing: 0.12em; text-transform: uppercase; color: #5b4a2a; background: var(--grain), linear-gradient(#f4ead2, #e6d7b2); border: 0; clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); box-shadow: inset 0 0 0 2px rgba(120, 90, 40, 0.3); transition: transform 0.4s var(--ease), background 0.3s; }
+.tag::before { content: ""; position: absolute; left: 11px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--kraft2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5); }
+.tag:hover { transform: translateY(-2px) rotate(-1.5deg); }
+.tag[aria-pressed="true"] { color: #fff; background: var(--grain), linear-gradient(#c8432e, #962a1b); }
+.tag[aria-pressed="true"]::before { background: #5c1008; }
+.sizes { display: flex; gap: 6px; }
+.sizes button { cursor: pointer; padding: 9px 13px; border-radius: 4px; font: 700 0.9rem/1 var(--head); letter-spacing: 0.06em; color: #5b4a2a; background: rgba(255, 250, 235, 0.55); border: 2px solid rgba(120, 90, 40, 0.4); transition: background 0.3s, color 0.3s; }
+.sizes button[aria-pressed="true"] { background: var(--iron); color: #f1e4c0; border-color: var(--iron); }
+.help { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font: 700 1.15rem/1 var(--head); color: #f1e4c0; background: var(--iron); border: 2px solid #8d8f93; box-shadow: 0 4px 8px rgba(40, 20, 0, 0.4); transition: transform 0.35s var(--ease); }
+.help:hover { transform: rotate(10deg) scale(1.1); }
+
+/* ---------- layout ---------- */
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: clamp(22px, 3.4vw, 46px); align-items: start; justify-content: center; }
+.left, .right { display: grid; gap: 18px; min-width: 0; }
+.left { justify-items: center; }
+
+/* ---------- board ---------- */
+.plateBoard { position: relative; width: min(100%, 600px); padding: clamp(10px, 2.2vw, 16px); border-radius: 6px; background: var(--grain), linear-gradient(150deg, #34383d, var(--iron2)); box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 5px #8d8f93, inset 0 2px 0 rgba(255, 255, 255, 0.14), 0 26px 38px -14px rgba(40, 20, 0, 0.8); touch-action: none; }
+.plateBoard::before, .plateBoard::after { content: ""; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c8cacd, #43474c 70%); box-shadow: 0 1px 1px #000; top: 5px; }
+.plateBoard::before { left: 5px; } .plateBoard::after { right: 5px; }
+#bd { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 3px; user-select: none; -webkit-user-select: none; cursor: crosshair; touch-action: none; }
+.cellbg { fill: #4a4540; }
+.cellbg.alt { fill: #524c46; }
+.bed { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 0.8; opacity: 0.95; }
+.sleep { fill: none; stroke: #2a1d12; stroke-width: 0.62; stroke-dasharray: 0.1 0.15; stroke-linejoin: round; opacity: 0.85; }
+.railO { fill: none; stroke: #d2d6db; stroke-width: 0.36; stroke-linecap: round; stroke-linejoin: round; }
+.railI { fill: none; stroke: #2a1d12; stroke-width: 0.2; stroke-linecap: round; stroke-linejoin: round; }
+.pulse { fill: none; stroke: #fff; stroke-width: 0.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 12 88; opacity: 0.9; }
+.st .ring { fill: #f4ead2; } .st .dot { stroke: rgba(0, 0, 0, 0.35); stroke-width: 0.03; }
+.st .roof { fill: #f4ead2; }
+.head { fill: none; stroke: #fff; stroke-width: 0.06; opacity: 0.9; animation: hd 0.9s ease-in-out infinite alternate; }
+@keyframes hd { from { transform: scale(0.85); } to { transform: scale(1.15); } }
+.head { transform-box: fill-box; transform-origin: center; }
+.over { fill: #fff; opacity: 0.18; }
+.plateBoard.won { animation: winGlow 1.4s ease 1; }
+@keyframes winGlow { 40% { box-shadow: 0 0 0 2px #0a0b0d, 0 0 0 5px #8d8f93, 0 0 50px 10px rgba(255, 220, 140, 0.8); } }
+
+.prog { width: min(100%, 600px); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.prog div { display: grid; gap: 6px; }
+.prog p { display: flex; justify-content: space-between; align-items: baseline; font: 700 0.72rem/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: #6a573a; }
+.prog p b { font: 700 1.3rem/1 var(--head); letter-spacing: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bar { height: 9px; border-radius: 5px; background: rgba(60, 40, 10, 0.2); overflow: hidden; box-shadow: inset 0 1px 2px rgba(60, 40, 10, 0.4); }
+.bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(#e85a3f, var(--c0)); transition: width 0.5s var(--ease); }
+.prog .b2 i { background: linear-gradient(#4a8ce6, var(--c1)); }
+.coach { width: min(100%, 600px); min-height: 3em; text-align: center; color: #5a4828; font-size: 0.98rem; }
+.coach b { display: block; font: 700 1.2rem/1.2 var(--head); color: var(--ink); margin-bottom: 2px; }
+
+/* ---------- ticket ---------- */
+.ticket { position: relative; padding: 20px 20px 18px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #faf3de, var(--cream)); box-shadow: 0 14px 22px -10px rgba(60, 35, 0, 0.7); transform: rotate(0.6deg); -webkit-mask: radial-gradient(circle 9px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat; mask: radial-gradient(circle 9px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 9px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat; }
+.ticket h2 { font: 700 1.35rem/1 var(--head); letter-spacing: 0.1em; text-transform: uppercase; padding-bottom: 10px; border-bottom: 2px dashed rgba(43, 36, 24, 0.5); }
+.routes { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.routes li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; font: 600 0.95rem/1.2 var(--body); }
+.routes li i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.routes li em { font-style: normal; font: 700 0.72rem/1 var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: #8a7a55; }
+.routes li.ok em { color: #1d7a45; } .routes li.ok em::before { content: "✓ "; }
+.acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { white-space: nowrap; cursor: pointer; padding: 12px 18px; border-radius: 4px; border: 0; font: 700 0.95rem/1 var(--head); letter-spacing: 0.1em; text-transform: uppercase; color: #f6ecd0; background: var(--grain), linear-gradient(#3b3f45, var(--iron2)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 4px 0 #000, 0 8px 12px rgba(40, 20, 0, 0.4); transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), opacity 0.3s; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); } .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.red { background: var(--grain), linear-gradient(#d9503a, #a42f1f); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 4px 0 #5e170d, 0 8px 12px rgba(40, 20, 0, 0.4); }
+.btn.paper { color: var(--ink); background: var(--grain), linear-gradient(#f7eed6, #e3d3ab); box-shadow: 0 1px 0 #fff inset, 0 4px 0 #a28f60, 0 8px 12px rgba(40, 20, 0, 0.3); }
+.btn.ghost { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 2px rgba(43, 36, 24, 0.5); }
+.clock { display: flex; align-items: baseline; gap: 12px; font: 700 2rem/1 var(--head); font-variant-numeric: tabular-nums; }
+.clock small { font: 700 0.72rem/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: #6a573a; }
+.slip { position: relative; width: min(100%, 600px); padding: 22px 22px 20px; text-align: center; background: var(--grain), linear-gradient(160deg, #faf3de, var(--cream)); box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--c3), 0 18px 28px -10px rgba(60, 35, 0, 0.7); }
+.slip.lost { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #8f8467, 0 18px 28px -10px rgba(60, 35, 0, 0.7); }
+.slip h2 { font: 700 1.9rem/1 var(--head); letter-spacing: 0.1em; text-transform: uppercase; color: #1d7a45; }
+.slip.lost h2 { color: #6a5d40; }
+.slip p { margin-top: 6px; }
+.slip .stats { display: flex; justify-content: center; gap: 30px; margin: 14px 0 4px; }
+.slip .stats div { display: grid; gap: 3px; } .slip .stats b { font: 700 1.8rem/1 var(--head); font-variant-numeric: tabular-nums; } .slip .stats span { font: 700 0.68rem/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.65; }
+.slip .foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.slip .next { margin-top: 12px; font: 700 0.74rem/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.65; font-variant-numeric: tabular-nums; }
+.record h3 { font: 700 0.75rem/1 var(--body); letter-spacing: 0.2em; text-transform: uppercase; color: #6a573a; padding-bottom: 10px; border-bottom: 2px dashed rgba(43, 36, 24, 0.35); margin-bottom: 12px; }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.nums div { display: grid; gap: 4px; } .nums b { font: 700 1.6rem/1 var(--head); font-variant-numeric: tabular-nums; } .nums span { font: 700 0.62rem/1 var(--body); letter-spacing: 0.1em; text-transform: uppercase; color: #6a573a; white-space: nowrap; }
+
+/* ---------- how to play ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 14px max(14px, env(safe-area-inset-left, 0px)); background: rgba(40, 25, 5, 0.7); animation: fadein 0.3s ease-out both; }
+@keyframes fadein { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(22px) rotate(-1deg); } }
+.how { --loop: 14s; width: 100%; max-width: 480px; max-height: 100%; overflow: auto; padding: 24px 22px 20px; display: grid; gap: 14px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #faf3de, var(--cream)); box-shadow: 0 0 0 3px #fff, 0 0 0 5px #8f8467, 0 30px 70px -10px rgba(40, 20, 0, 0.8); animation: rise 0.7s var(--ease) both; }
+.how h2 { font: 700 1.7rem/1 var(--head); letter-spacing: 0.1em; text-transform: uppercase; color: var(--stamp); }
+.how .lead { margin-top: -6px; opacity: 0.85; }
+.demo { display: grid; gap: 10px; justify-items: center; padding: 14px; background: linear-gradient(150deg, #34383d, var(--iron2)); border-radius: 6px; }
+.demo svg { width: min(100%, 230px); height: auto; display: block; }
+.demo .bed, .demo .sleep, .demo .railO, .demo .railI { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.demo .sleep { stroke-dasharray: 0.1 0.15; stroke-dashoffset: 0; }
+.demo .grow { stroke-dasharray: 100; stroke-dashoffset: 100; }
+.demo .r1 { animation: dr1 var(--loop) infinite; } .demo .r2 { animation: dr2 var(--loop) infinite; } .demo .r3 { animation: dr3 var(--loop) infinite; }
+@keyframes dr1 { 0%, 8% { stroke-dashoffset: 100; } 22%, 96% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 100; } }
+@keyframes dr2 { 0%, 28% { stroke-dashoffset: 100; } 50%, 96% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 100; } }
+@keyframes dr3 { 0%, 55% { stroke-dashoffset: 100; } 78%, 96% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 100; } }
+.demo .sleepcover { fill: none; stroke: #4a4540; }
+.dcap { position: relative; width: 100%; height: 2.6em; color: #f1e4c0; font-size: 0.95rem; text-align: center; }
+.dcap span { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; line-height: 1.3; }
+.dcap span:nth-child(1) { animation: k1 var(--loop) infinite; } .dcap span:nth-child(2) { animation: k2 var(--loop) infinite; } .dcap span:nth-child(3) { animation: k3 var(--loop) infinite; } .dcap span:nth-child(4) { animation: k4 var(--loop) infinite; }
+@keyframes k1 { 0%, 2% { opacity: 0; } 5%, 24% { opacity: 1; } 27%, 100% { opacity: 0; } }
+@keyframes k2 { 0%, 27% { opacity: 0; } 30%, 52% { opacity: 1; } 55%, 100% { opacity: 0; } }
+@keyframes k3 { 0%, 54% { opacity: 0; } 57%, 79% { opacity: 1; } 82%, 100% { opacity: 0; } }
+@keyframes k4 { 0%, 81% { opacity: 0; } 85%, 96% { opacity: 1; } 99%, 100% { opacity: 0; } }
+.how ol { list-style: none; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+.how li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.how li::before { content: counter(s); width: 28px; height: 28px; display: grid; place-items: center; font: 700 1rem/1 var(--head); color: #fff; background: var(--stamp); border-radius: 50%; }
+.how .foot3 { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.how .foot3 p { font-size: 0.88rem; opacity: 0.75; }
+
+@media (max-width: 960px) { .work { grid-template-columns: minmax(0, 1fr); } .tools { margin-left: 0; } .ticket { transform: none; } .coffee { display: none; } }
+@media (max-width: 440px) { .plate { padding-inline: 32px; } .tag { padding-inline: 26px 14px; } .nums b { font-size: 1.35rem; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+<div class="wrap">
+  <div class="coffee" aria-hidden="true"></div>
+  <header class="top">
+    <div class="plate"><h1>Rail</h1><p id="sub"></p></div>
+    <div class="tools">
+      <div class="tags" role="group" aria-label="Mode"><button type="button" class="tag" id="mDaily" aria-pressed="true">Daily</button><button type="button" class="tag" id="mEndless" aria-pressed="false">Endless</button></div>
+      <div class="sizes" id="sizes" role="group" aria-label="Board size" hidden><button type="button" data-z="5" aria-pressed="true">5×5</button><button type="button" data-z="6" aria-pressed="false">6×6</button><button type="button" data-z="7" aria-pressed="false">7×7</button></div>
+      <button type="button" class="help" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="work">
+    <div class="left">
+      <div class="prog"><div><p><span>Routes joined</span><b id="pj">0/5</b></p><div class="bar"><i id="bj"></i></div></div><div class="b2"><p><span>Squares used</span><b id="pc">0/25</b></p><div class="bar b2"><i id="bc"></i></div></div></div>
+      <div class="plateBoard" id="pb"><svg id="bd" viewBox="0 0 5 5" role="img" aria-label="Track board"></svg></div>
+      <div class="coach" id="coach" aria-live="polite"></div>
+      <div class="slip" id="slip" hidden></div>
+    </div>
+    <div class="right">
+      <section class="ticket" aria-label="Routes"><h2>Route card</h2><ul class="routes" id="routes"></ul></section>
+      <div class="clock"><span id="clock">00:00</span><small id="hintn"></small></div>
+      <div class="acts" id="acts"><button type="button" class="btn paper" id="undo">Undo</button><button type="button" class="btn red" id="hint">Hint</button><button type="button" class="btn" id="reset">Start over</button><button type="button" class="btn" id="giveup">Show answer</button></div>
+      <section class="record" aria-label="Record"><h3 id="recT">Record</h3><div class="nums" id="nums"></div></section>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="how" id="how" role="dialog" aria-modal="true" aria-labelledby="howT"></div></div>
+
+<script>
+// Rail rules. No DOM in here, so the same file runs in the page and in node.
+// A board is n x n squares. Each route has two stations; lay track so every pair is joined and every square is used.
+
+const EPOCH = '2026-11-09';
+
+function hashStr(s) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed | 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function dateKey(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function dayNumber(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const [ey, em, ed] = EPOCH.split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ey, em - 1, ed)) / 86400000) + 1;
+}
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000), p = (x) => String(x).padStart(2, '0');
+  return p(Math.floor(s / 60)) + ':' + p(s % 60);
+}
+
+function nbrs(n, i) {
+  const r = Math.floor(i / n), c = i % n, o = [];
+  if (r > 0) o.push(i - n); if (r < n - 1) o.push(i + n); if (c > 0) o.push(i - 1); if (c < n - 1) o.push(i + 1);
+  return o;
+}
+
+// Grow k routes from random squares until the board is full. Every route ends up at least 3 squares long.
+function grow(n, k, rnd) {
+  const N = n * n, owner = new Array(N).fill(-1), paths = [];
+  const cells = Array.from({ length: N }, (_, i) => i);
+  for (let i = N - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = cells[i]; cells[i] = cells[j]; cells[j] = t; }
+  for (let q = 0; q < k; q++) { paths.push([cells[q]]); owner[cells[q]] = q; }
+  let progress = true;
+  while (progress) {
+    progress = false;
+    const order = paths.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t; }
+    for (const q of order) {
+      const p = paths[q], ends = rnd() < 0.5 ? [0, 1] : [1, 0], opts = [];
+      for (const e of ends) {
+        const cell = e === 0 ? p[0] : p[p.length - 1];
+        nbrs(n, cell).forEach((x) => { if (owner[x] < 0) opts.push([e, x]); });
+      }
+      if (!opts.length) continue;
+      const [e, x] = opts[Math.floor(rnd() * opts.length)];
+      if (e === 0) p.unshift(x); else p.push(x);
+      owner[x] = q; progress = true;
+    }
+  }
+  if (owner.some((o) => o < 0)) return null;
+  if (paths.some((p) => p.length < 3)) return null;
+  return paths;
+}
+
+// Counts different complete layouts (stops at limit). Gives up after `budget` steps and answers -1.
+function countSolutions(n, pairs, limit, budget) {
+  const N = n * n, own = new Array(N).fill(-1), head = pairs.map((p) => p[0]), done = pairs.map(() => false);
+  const nb = []; for (let i = 0; i < N; i++) nb.push(nbrs(n, i));
+  pairs.forEach((p, k) => { own[p[0]] = k; own[p[1]] = k; });
+  let found = 0, steps = 0, blown = false;
+  function free(i) { return own[i] < 0; }
+  function okState() {
+    for (let i = 0; i < N; i++) {
+      if (own[i] >= 0) continue;
+      let c = 0;
+      for (const x of nb[i]) { if (own[x] < 0) c++; else { for (let k = 0; k < pairs.length; k++) if (!done[k] && (head[k] === x || pairs[k][1] === x)) { c++; break; } } }
+      if (c < 2) return false;
+    }
+    return true;
+  }
+  function go() {
+    if (found >= limit || blown) return;
+    if (++steps > budget) { blown = true; return; }
+    let bestK = -1, bestOpts = null;
+    for (let k = 0; k < pairs.length; k++) {
+      if (done[k]) continue;
+      const o = nb[head[k]].filter((x) => free(x) || x === pairs[k][1]);
+      if (!o.length) return;
+      if (!bestOpts || o.length < bestOpts.length) { bestK = k; bestOpts = o; }
+    }
+    if (bestK < 0) { for (let i = 0; i < N; i++) if (own[i] < 0) return; found++; return; }
+    const k = bestK, prev = head[k];
+    for (const x of bestOpts) {
+      if (x === pairs[k][1]) { done[k] = true; if (okState()) go(); done[k] = false; }
+      else { own[x] = k; head[k] = x; if (okState()) go(); own[x] = -1; head[k] = prev; }
+      if (found >= limit || blown) return;
+    }
+  }
+  go();
+  return blown ? -1 : found;
+}
+
+function makePuzzle(seedStr, n) {
+  const rnd = mulberry32(hashStr('rail/' + seedStr + '/' + n));
+  const k = n === 5 ? 5 : n === 6 ? 6 : 7;
+  let fallback = null;
+  for (let attempt = 0; attempt < 4000; attempt++) {
+    const paths = grow(n, k, rnd);
+    if (!paths) continue;
+    if (paths.some((p) => p.length > Math.ceil(n * n / 2.2))) continue;
+    const pairs = paths.map((p) => [p[0], p[p.length - 1]]);
+    const sol = paths.map((p) => p.slice());
+    const cnt = countSolutions(n, pairs, 2, 60000);
+    const puz = { n, k, pairs, sol };
+    if (cnt === 1) return puz;
+    if (!fallback && cnt !== 0) fallback = puz;
+    if (attempt > 250 && fallback) return fallback;
+  }
+  if (fallback) return fallback;
+  throw new Error('no board for ' + seedStr);
+}
+
+// The player's tracks: paths[k] is a list of squares starting at one of route k's stations.
+function status(puz, paths) {
+  const N = puz.n * puz.n, cover = new Array(N).fill(-1);
+  let joined = 0;
+  const ok = paths.map((p, k) => {
+    p.forEach((c) => { cover[c] = k; });
+    const a = puz.pairs[k][0], b = puz.pairs[k][1];
+    const done = p.length > 1 && ((p[0] === a && p[p.length - 1] === b) || (p[0] === b && p[p.length - 1] === a));
+    if (done) joined++;
+    return done;
+  });
+  let covered = 0; for (let i = 0; i < N; i++) if (cover[i] >= 0) covered++;
+  return { ok, joined, covered, total: N, solved: joined === puz.k && covered === N };
+}
+function shareText(no, mode, ms, hints) {
+  return 'RAIL ' + (mode === 'daily' ? 'No. ' + no : 'Endless') + '  ' + fmtTime(ms) + ' · ' + (hints ? hints + (hints === 1 ? ' hint' : ' hints') : 'no hints');
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { EPOCH, hashStr, mulberry32, dateKey, dayNumber, fmtTime, makePuzzle, status, countSolutions, shareText };
+}
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'rail:v1';
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var $ = function (id) { return document.getElementById(id); };
+  var todayKey = dateKey(new Date()), dayNo = dayNumber(todayKey);
+  var EASE = 'cubic-bezier(0.22, 1, 0.36, 1)', NS = 'http://www.w3.org/2000/svg';
+  var COL = ['#e0472f', '#2f74d6', '#eab730', '#2f9e62', '#ef8a24', '#9552c6', '#19a3b0'], NAME = ['Red', 'Blue', 'Yellow', 'Green', 'Orange', 'Purple', 'Teal'];
+
+  try {
+    var g = '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="19"/><feColorMatrix values="0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0.2 0"/></filter><rect width="240" height="240" filter="url(#g)"/></svg>';
+    document.documentElement.style.setProperty('--grain', 'url("data:image/svg+xml;base64,' + btoa(g) + '")');
+  } catch (e) {}
+
+  function anim(el, kf, o) {
+    if (reduce || !el || !el.animate) return null;
+    var opt = { duration: 450, easing: EASE, fill: 'backwards' };
+    for (var k in o) opt[k] = o[k];
+    try { return el.animate(kf, opt); } catch (e) { return null; }
+  }
+
+  /* ---------- saved ---------- */
+  function clean(s) { s = s || {}; return { played: +s.played || 0, won: +s.won || 0, streak: +s.streak || 0, best: +s.best || 0, lastWin: +s.lastWin || 0 }; }
+  function load() {
+    var o = null;
+    try { var r = localStorage.getItem(KEY); if (r) o = JSON.parse(r); } catch (e) { o = null; }
+    o = (o && typeof o === 'object') ? o : {};
+    return { seen: !!o.seen, es: [5, 6, 7].indexOf(+o.es) >= 0 ? +o.es : 5, sd: clean(o.sd), se: clean(o.se), d: o.d || null, e: o.e || null };
+  }
+  var store = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function newSeed() { return 'r' + Math.random().toString(36).slice(2, 9); }
+  function dailySize(k) { return 5 + (hashStr('rail-size/' + k) % 2); }
+
+  /* ---------- state ---------- */
+  var S = { mode: 'daily', size: 5, seed: '', puz: null, paths: [], lock: {}, hist: [], ms: 0, t0: 0, hints: 0, done: false, won: false, gaveUp: false };
+  var timerOn = false, giveTimer = 0, drawing = -1, gestureDirty = false, snap = null, wasJoined = [];
+  function rec() { return S.mode === 'daily' ? store.d : store.e; }
+  function stats() { return S.mode === 'daily' ? store.sd : store.se; }
+  function elapsed() { return S.ms + (timerOn ? Date.now() - S.t0 : 0); }
+  function startClock() { if (!timerOn && !S.done) { S.t0 = Date.now(); timerOn = true; } }
+  function stopClock() { if (timerOn) { S.ms += Date.now() - S.t0; timerOn = false; } }
+  function save1() { var r = rec(); if (!r) return; r.paths = S.paths; r.lk = Object.keys(S.lock).map(Number); r.ms = elapsed(); r.hints = S.hints; r.done = S.done; r.won = S.won; r.gu = S.gaveUp; save(); }
+  function clone(p) { return p.map(function (a) { return a.slice(); }); }
+
+  /* ---------- drawing the board ---------- */
+  function svgEl(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function pts(path) { return path.map(function (c) { var n = S.puz.n; return (c % n + 0.5) + ',' + (Math.floor(c / n) + 0.5); }).join(' '); }
+  function stationHtml(c, k, n) {
+    var x = c % n + 0.5, y = Math.floor(c / n) + 0.5;
+    return '<g class="st"><circle class="ring" cx="' + x + '" cy="' + y + '" r="0.39"/><circle class="dot" cx="' + x + '" cy="' + y + '" r="0.3" fill="' + COL[k] + '"/><path class="roof" d="M' + (x - 0.15) + ' ' + (y + 0.02) + 'L' + x + ' ' + (y - 0.14) + 'L' + (x + 0.15) + ' ' + (y + 0.02) + 'Z"/><rect class="roof" x="' + (x - 0.11) + '" y="' + (y + 0.02) + '" width="0.22" height="0.14"/></g>';
+  }
+  function layerHtml(path, k, cls) {
+    if (path.length < 2) return '';
+    var p = pts(path);
+    return '<g data-k="' + k + '"' + (cls ? ' class="' + cls + '"' : '') + '><polyline class="bed" stroke="' + COL[k] + '" points="' + p + '"/><polyline class="sleep" points="' + p + '"/><polyline class="railO" points="' + p + '"/><polyline class="railI" points="' + p + '"/></g>';
+  }
+  function draw() {
+    var p = S.puz, n = p.n, h = '';
+    for (var i = 0; i < n * n; i++) h += '<rect class="cellbg' + (((Math.floor(i / n) + i % n) % 2) ? ' alt' : '') + '" x="' + (i % n + 0.03) + '" y="' + (Math.floor(i / n) + 0.03) + '" width="0.94" height="0.94" rx="0.06"/>';
+    S.paths.forEach(function (path, k) { h += layerHtml(path, k); });
+    p.pairs.forEach(function (pr, k) { h += stationHtml(pr[0], k, n) + stationHtml(pr[1], k, n); });
+    if (drawing >= 0 && S.paths[drawing].length) { var hd = S.paths[drawing][S.paths[drawing].length - 1]; h += '<circle class="head" cx="' + (hd % n + 0.5) + '" cy="' + (Math.floor(hd / n) + 0.5) + '" r="0.44"/>'; }
+    $('bd').innerHTML = h;
+  }
+  function refresh() {
+    var st = status(S.puz, S.paths);
+    draw();
+    $('pj').textContent = st.joined + '/' + S.puz.k; $('pc').textContent = st.covered + '/' + st.total;
+    $('bj').style.width = Math.round(st.joined / S.puz.k * 100) + '%'; $('bc').style.width = Math.round(st.covered / st.total * 100) + '%';
+    var li = $('routes').children; for (var k = 0; k < li.length; k++) { li[k].classList.toggle('ok', st.ok[k]); li[k].lastChild.textContent = st.ok[k] ? 'joined' : (S.lock[k] ? 'pinned' : 'open'); }
+    $('undo').disabled = S.done || !S.hist.length; $('reset').disabled = S.done || !S.paths.some(function (p, k) { return p.length > 1 && !S.lock[k]; }); $('hint').disabled = S.done;
+    $('hintn').textContent = S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : '';
+    st.ok.forEach(function (ok, k) { if (ok && !wasJoined[k] && !S.done) pulse(k); wasJoined[k] = ok; });
+    coach(st);
+    return st;
+  }
+  function pulse(k) {
+    var g = $('bd').querySelector('g[data-k="' + k + '"]'); if (!g || reduce) return;
+    var pl = svgEl('polyline', { class: 'pulse', points: pts(S.paths[k]), pathLength: '100' }); g.appendChild(pl);
+    var a = pl.animate([{ strokeDashoffset: 12 }, { strokeDashoffset: -100 }], { duration: 800, easing: 'ease-in-out' });
+    a.onfinish = function () { pl.remove(); };
+  }
+  function coach(st) {
+    var c = $('coach'); if (S.done) return;
+    var any = S.paths.some(function (p) { return p.length > 1; });
+    if (!any) c.innerHTML = '<b>Drag from a station</b>Draw a track to the station with the same colour.';
+    else if (st.joined < S.puz.k) c.innerHTML = '<b>' + st.joined + ' of ' + S.puz.k + ' routes joined</b>Tracks cannot cross. If you draw over another track, it gets cut.';
+    else c.innerHTML = '<b>All routes joined</b>' + (st.total - st.covered) + (st.total - st.covered === 1 ? ' square is' : ' squares are') + ' still empty. Every square needs track.';
+  }
+
+  /* ---------- input ---------- */
+  var bd = $('bd');
+  function cellAt(e) {
+    var r = bd.getBoundingClientRect(), n = S.puz.n, x = (e.clientX - r.left) / r.width * n, y = (e.clientY - r.top) / r.height * n;
+    if (x < 0 || y < 0 || x >= n || y >= n) return -1;
+    return Math.floor(y) * n + Math.floor(x);
+  }
+  function stationOf(c) { for (var k = 0; k < S.puz.k; k++) if (S.puz.pairs[k][0] === c || S.puz.pairs[k][1] === c) return k; return -1; }
+  function ownerOf(c) { for (var k = 0; k < S.paths.length; k++) if (S.paths[k].indexOf(c) >= 0) return k; return -1; }
+  function isEnd(k, c) { return S.puz.pairs[k][0] === c || S.puz.pairs[k][1] === c; }
+  bd.addEventListener('pointerdown', function (e) {
+    if (S.done || e.button > 0) return;
+    var c = cellAt(e); if (c < 0) return;
+    var k = stationOf(c), snapshot = clone(S.paths);
+    if (k < 0) { var o = ownerOf(c); if (o < 0) return; k = o; }
+    if (S.lock[k]) { anim(bd, [{ transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'none' }], { duration: 260, fill: 'none' }); return; }
+    startClock();
+    var p = S.paths[k];
+    if (stationOf(c) === k) { if (!(p.length && p[0] === c)) { S.paths[k] = [c]; } else if (p.length) { S.paths[k] = [c]; } }
+    else { var i = p.indexOf(c); S.paths[k] = p.slice(0, i + 1); }
+    drawing = k; snap = snapshot; gestureDirty = true;
+    try { bd.setPointerCapture(e.pointerId); } catch (x) {}
+    e.preventDefault(); refresh();
+  });
+  bd.addEventListener('pointermove', function (e) {
+    if (drawing < 0) return;
+    var c = cellAt(e); if (c < 0) return;
+    var p = S.paths[drawing], last = p[p.length - 1], n = S.puz.n, guard = 0;
+    while (c !== last && guard++ < 12) {
+      var r1 = Math.floor(last / n), c1 = last % n, r2 = Math.floor(c / n), c2 = c % n, next;
+      if (Math.abs(c2 - c1) >= Math.abs(r2 - r1)) next = r1 * n + c1 + (c2 > c1 ? 1 : -1); else next = (r1 + (r2 > r1 ? 1 : -1)) * n + c1;
+      if (!step(next)) break;
+      p = S.paths[drawing]; last = p[p.length - 1];
+    }
+    refresh();
+  });
+  function step(cell) {
+    var k = drawing, p = S.paths[k], len = p.length, other = S.puz.pairs[k][0] === p[0] ? S.puz.pairs[k][1] : S.puz.pairs[k][0];
+    var joined = len > 1 && p[len - 1] === other;
+    if (len > 1 && cell === p[len - 2]) { p.pop(); return true; }
+    if (joined) return false;
+    var idx = p.indexOf(cell); if (idx >= 0) { S.paths[k] = p.slice(0, idx + 1); return true; }
+    var st = stationOf(cell);
+    if (st >= 0 && st !== k) return false;
+    var o = ownerOf(cell);
+    if (o >= 0 && o !== k) { if (S.lock[o]) return false; var q = S.paths[o], j = q.indexOf(cell); S.paths[o] = q.slice(0, j); }
+    p.push(cell); return true;
+  }
+  function endDrag() {
+    if (drawing < 0) return;
+    var changed = JSON.stringify(snap) !== JSON.stringify(S.paths);
+    if (changed && snap) { S.hist.push(snap); if (S.hist.length > 40) S.hist.shift(); }
+    drawing = -1; snap = null;
+    var st = refresh(); save1();
+    if (st.solved) finish(true);
+  }
+  bd.addEventListener('pointerup', endDrag); bd.addEventListener('pointercancel', endDrag);
+  bd.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  function undo() { if (S.done || !S.hist.length) return; S.paths = S.hist.pop(); wasJoined = status(S.puz, S.paths).ok.slice(); refresh(); save1(); }
+  function resetAll() { if (S.done) return; S.hist.push(clone(S.paths)); S.paths = S.paths.map(function (p, k) { return S.lock[k] ? p : []; }); wasJoined = status(S.puz, S.paths).ok.slice(); refresh(); save1(); }
+  function hint() {
+    if (S.done) return; startClock();
+    var st = status(S.puz, S.paths), k = -1;
+    for (var i = 0; i < S.puz.k; i++) if (!S.lock[i] && !(st.ok[i] && sameRoute(S.paths[i], S.puz.sol[i]))) { k = i; break; }
+    if (k < 0) return;
+    S.hist.push(clone(S.paths));
+    var sol = S.puz.sol[k]; sol.forEach(function (c) { var o = ownerOf(c); if (o >= 0 && o !== k) { var j = S.paths[o].indexOf(c); S.paths[o] = S.paths[o].slice(0, j); } });
+    S.paths[k] = sol.slice(); S.lock[k] = true; S.hints++;
+    var st2 = refresh(); save1();
+    if (st2.solved) finish(true);
+  }
+  function sameRoute(a, b) { if (a.length !== b.length) return false; var f = a.join() === b.join(), r = a.slice().reverse().join() === b.join(); return f || r; }
+  function giveUp() {
+    if (S.done) return; var b = $('giveup');
+    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Sure?'; clearTimeout(giveTimer); giveTimer = setTimeout(function () { b.removeAttribute('data-sure'); b.textContent = 'Show answer'; }, 3000); return; }
+    S.gaveUp = true; S.paths = clone(S.puz.sol); refresh(); finish(false);
+  }
+  $('undo').addEventListener('click', undo); $('reset').addEventListener('click', resetAll); $('hint').addEventListener('click', hint); $('giveup').addEventListener('click', giveUp);
+  document.addEventListener('keydown', function (e) {
+    if (!$('ov').hidden) { if (e.key === 'Escape') closeHow(); return; }
+    if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); undo(); }
+  });
+
+  /* ---------- finishing ---------- */
+  function finish(won) {
+    stopClock(); S.done = true; S.won = won; drawing = -1;
+    var st = stats(); st.played++;
+    if (won) { st.won++; st.streak = (S.mode === 'daily') ? ((st.lastWin === dayNo - 1 || st.lastWin === dayNo) ? st.streak + 1 : 1) : st.streak + 1; if (S.mode === 'daily') st.lastWin = dayNo; if (!st.best || S.ms < st.best) st.best = S.ms; } else st.streak = 0;
+    save1(); save(); refresh(); $('acts').hidden = true; $('clock').textContent = fmtTime(S.ms);
+    $('coach').innerHTML = won ? '<b>Every route is open</b>' + (S.hints ? 'Done with ' + S.hints + (S.hints === 1 ? ' hint.' : ' hints.') : 'Done without a single hint.') : '<b>Here is one way to lay it</b>Every square is used.';
+    if (won) {
+      $('pb').classList.add('won');
+      for (var k = 0; k < S.puz.k; k++) (function (k) { setTimeout(function () { pulse(k); }, 120 + k * 160); })(k);
+    }
+    setTimeout(function () { showSlip(false); renderRecord(); }, reduce || !won ? 0 : 1300);
+  }
+  function showSlip(instant) {
+    var sl = $('slip'), txt = shareText(dayNo, S.mode, S.ms, S.hints);
+    sl.className = 'slip' + (S.won ? '' : ' lost');
+    sl.innerHTML = '<h2>' + (S.won ? 'Line open' : 'Answer shown') + '</h2><p>' + (S.won ? 'All the trains can run.' : 'You gave up on this one.') + '</p>' +
+      '<div class="stats"><div><b>' + fmtTime(S.ms) + '</b><span>Time</span></div><div><b>' + S.hints + '</b><span>Hints</span></div></div>' +
+      '<div class="foot"><button type="button" class="btn red" id="copy">Copy result</button>' + (S.mode === 'daily' ? '<button type="button" class="btn ghost" id="toEnd">Play endless</button>' : '<button type="button" class="btn paper" id="nextM">Next board</button><button type="button" class="btn ghost" id="toDaily">Back to daily</button>') + '</div>' + (S.mode === 'daily' ? '<p class="next" id="nextin"></p>' : '');
+    sl.hidden = false;
+    $('copy').addEventListener('click', function () { var b = this, done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy result'; }, 1600); }; try { navigator.clipboard.writeText(txt).then(done, function () { fb(txt); done(); }); } catch (e) { fb(txt); done(); } });
+    var a = $('toEnd'); if (a) a.addEventListener('click', function () { go('endless'); });
+    var n = $('nextM'); if (n) n.addEventListener('click', function () { store.e = null; init('endless'); });
+    var d = $('toDaily'); if (d) d.addEventListener('click', function () { go('daily'); });
+    tick();
+    if (!instant) { if (window.innerWidth <= 960 && !reduce) { try { sl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} } anim(sl, [{ opacity: 0, transform: 'translateY(18px) rotate(1deg)' }, { opacity: 1, transform: 'none' }], { duration: 700 }); }
+  }
+  function fb(t) { var a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(a); }
+  function renderRecord() {
+    var st = stats();
+    $('recT').textContent = 'Record · ' + (S.mode === 'daily' ? 'Daily' : 'Endless');
+    $('nums').innerHTML = '<div><b>' + st.won + '</b><span>Solved</span></div><div><b>' + st.streak + '</b><span>Streak</span></div><div><b>' + (st.best ? fmtTime(st.best) : '–') + '</b><span>Best time</span></div><div><b>' + st.played + '</b><span>Played</span></div>';
+  }
+
+  /* ---------- modes ---------- */
+  function init(mode) {
+    S.mode = mode; stopClock(); drawing = -1;
+    $('mDaily').setAttribute('aria-pressed', mode === 'daily'); $('mEndless').setAttribute('aria-pressed', mode === 'endless');
+    $('sizes').hidden = mode !== 'endless';
+    var r = rec();
+    if (mode === 'daily') { if (!r || r.key !== todayKey) { store.d = r = { key: todayKey, paths: [], lk: [], ms: 0, hints: 0, done: false, won: false }; save(); } S.seed = todayKey; S.size = dailySize(todayKey); }
+    else { if (!r || !r.seed) { store.e = r = { seed: newSeed(), size: store.es, paths: [], lk: [], ms: 0, hints: 0, done: false, won: false }; save(); } S.seed = r.seed; S.size = r.size; }
+    var bs = $('sizes').children; for (var z = 0; z < bs.length; z++) bs[z].setAttribute('aria-pressed', +bs[z].getAttribute('data-z') === S.size);
+    S.puz = makePuzzle(S.seed, S.size);
+    var saved = r.paths || [];
+    S.paths = S.puz.pairs.map(function (pr, k) { var p = saved[k]; return (Array.isArray(p) && p.every(function (c) { return c >= 0 && c < S.size * S.size; })) ? p : []; });
+    S.lock = {}; (r.lk || []).forEach(function (k) { S.lock[k] = true; });
+    S.hist = []; S.ms = +r.ms || 0; S.hints = +r.hints || 0; S.done = !!r.done; S.won = !!r.won; S.gaveUp = !!r.gu; timerOn = false;
+    if (S.done && !S.won) S.paths = clone(S.puz.sol);
+    $('bd').setAttribute('viewBox', '0 0 ' + S.size + ' ' + S.size);
+    $('sub').textContent = mode === 'daily' ? 'No. ' + dayNo + ' · ' + new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Endless · ' + S.size + '×' + S.size;
+    var rt = ''; S.puz.pairs.forEach(function (pr, k) { rt += '<li><i style="background:' + COL[k] + '"></i><span>' + NAME[k] + ' line</span><em>open</em></li>'; }); $('routes').innerHTML = rt;
+    var gb = $('giveup'); gb.removeAttribute('data-sure'); gb.textContent = 'Show answer';
+    $('slip').hidden = true; $('acts').hidden = S.done; $('pb').classList.remove('won');
+    wasJoined = status(S.puz, S.paths).ok.slice();
+    refresh(); renderRecord(); $('clock').textContent = fmtTime(S.ms);
+    if (S.done) { $('coach').innerHTML = S.won ? '<b>Every route is open</b>' + (S.hints ? 'Done with ' + S.hints + (S.hints === 1 ? ' hint.' : ' hints.') : 'Done without a single hint.') : '<b>Here is one way to lay it</b>Every square is used.'; if (S.won) $('pb').classList.add('won'); showSlip(true); }
+    anim($('pb'), [{ opacity: 0, transform: 'translateY(16px) rotate(-0.5deg)' }, { opacity: 1, transform: 'none' }], { duration: 700 });
+    var ps = $('bd').querySelectorAll('g[data-k]'); for (var i = 0; i < ps.length; i++) anim(ps[i], [{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 200 + i * 80 });
+  }
+  function go(m) { init(m); try { location.hash = m; } catch (e) {} }
+  window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if ((h === 'daily' || h === 'endless') && h !== S.mode) init(h); });
+  $('mDaily').addEventListener('click', function () { go('daily'); }); $('mEndless').addEventListener('click', function () { go('endless'); });
+  $('sizes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var z = +b.getAttribute('data-z'); if (z === S.size) return; store.es = z; store.e = null; init('endless'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { if (timerOn) { stopClock(); save1(); } } else if (!S.done && S.paths.some(function (p) { return p.length > 1; })) startClock(); });
+  window.addEventListener('pagehide', function () { if (!S.done) { stopClock(); save1(); } });
+
+  /* ---------- how to play ---------- */
+  var DEMO = [{ k: 0, path: [0, 1, 2, 3] }, { k: 1, path: [4, 8, 12, 13, 14, 15] }, { k: 3, path: [5, 6, 7, 11, 10, 9] }];
+  function demoSvg() {
+    var n = 4, h = '<svg viewBox="0 0 4 4" aria-hidden="true">', i;
+    for (i = 0; i < 16; i++) h += '<rect class="cellbg' + (((Math.floor(i / n) + i % n) % 2) ? ' alt' : '') + '" x="' + (i % n + 0.03) + '" y="' + (Math.floor(i / n) + 0.03) + '" width="0.94" height="0.94" rx="0.06"/>';
+    DEMO.forEach(function (d, j) {
+      var p = d.path.map(function (c) { return (c % n + 0.5) + ',' + (Math.floor(c / n) + 0.5); }).join(' ');
+      h += '<polyline class="bed grow r' + (j + 1) + '" pathLength="100" stroke="' + COL[d.k] + '" points="' + p + '"/>';
+    });
+    DEMO.forEach(function (d, j) { var p = d.path.map(function (c) { return (c % n + 0.5) + ',' + (Math.floor(c / n) + 0.5); }).join(' '); h += '<polyline class="railO grow r' + (j + 1) + '" pathLength="100" points="' + p + '"/><polyline class="railI grow r' + (j + 1) + '" pathLength="100" points="' + p + '"/>'; });
+    DEMO.forEach(function (d) { var a = d.path[0], b = d.path[d.path.length - 1]; h += stationHtml2(a, d.k, n) + stationHtml2(b, d.k, n); });
+    return h + '</svg>';
+  }
+  function stationHtml2(c, k, n) { var x = c % n + 0.5, y = Math.floor(c / n) + 0.5; return '<g class="st"><circle class="ring" cx="' + x + '" cy="' + y + '" r="0.39"/><circle class="dot" cx="' + x + '" cy="' + y + '" r="0.3" fill="' + COL[k] + '"/></g>'; }
+  function howHtml() {
+    var h = '<h2 id="howT">How to play</h2><p class="lead">Join each pair of stations with track, and use every square.</p><div class="demo">' + demoSvg() + '<div class="dcap"><span>Drag from a station to the one with the same colour.</span><span>Tracks cannot cross or share a square.</span><span>Keep going until every pair is joined.</span><span>Every square covered. Line open.</span></div></div>';
+    h += '<ol><li><span><b>Press on a station and drag</b> to the other one of the same colour.</span></li><li><span><b>Tracks never cross.</b> If you drag over another track, that track is cut and you can redraw it.</span></li><li><span><b>Fill the whole board.</b> Every square needs track. Stuck? A hint lays one route for you.</span></li></ol>';
+    h += '<div class="foot3"><p>Daily: same board for everyone. Endless: three sizes.</p><button type="button" class="btn red" id="howGo">Got it</button></div>';
+    return h;
+  }
+  function openHow() { $('how').innerHTML = howHtml(); $('ov').hidden = false; store.seen = true; save(); $('howGo').addEventListener('click', closeHow); $('howGo').focus({ preventScroll: true }); }
+  function closeHow() {
+    var ov = $('ov');
+    function fin() { ov.hidden = true; $('how').innerHTML = ''; try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {} }
+    var a = anim(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    if (a) a.onfinish = function () { a.cancel(); fin(); }; else fin();
+  }
+  $('helpBtn').addEventListener('click', openHow);
+  $('ov').addEventListener('click', function (e) { if (e.target === $('ov')) closeHow(); });
+
+  /* ---------- clock ---------- */
+  function tick() {
+    var now = new Date(), k = dateKey(now);
+    if (k !== todayKey) { todayKey = k; dayNo = dayNumber(k); store.d = null; save(); if (S.mode === 'daily') init('daily'); return; }
+    if (timerOn) $('clock').textContent = fmtTime(elapsed());
+    var el = $('nextin'); if (!el) return;
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), s = Math.max(0, Math.floor((next - now) / 1000)), p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = 'Next board in ' + p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+  }
+  setInterval(tick, 500);
+
+  var h0 = location.hash.replace('#', '');
+  init(h0 === 'endless' ? 'endless' : 'daily');
+  if (!store.seen) setTimeout(function () { if (!store.seen) openHow(); }, 350);
+})();
+</script>

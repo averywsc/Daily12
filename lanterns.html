@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>Lanterns</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+/* Layout: a night festival. Paper lanterns hang along the top and sway. Under them the board sits in a
+   black lacquer tray: every square is a sheet of rice paper that stays dim until a lantern lights it.
+   On a wide screen the rules sit on a paper card to the left and the clock, buttons and record to the right.
+   On a phone it is one column: board first, then the buttons. */
+:root {
+  --night: #0f1330; --night2: #1b1f4a; --glow: #f6c35b; --glow2: #ffe7a6; --red: #d8432f; --red2: #9c2417; --ink: #15131c; --gold: #e9c46a; --jade: #8fd3aa; --coral: #ff8f7c;
+  --paper: #efe3c8; --paper-ink: #2a2330; --dim: #3a4170; --dim2: #2d3360;
+  --serif: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', Georgia, serif; --sans: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', 'Trebuchet MS', system-ui, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); --grain: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--night); }
+body {
+  margin: 0; min-height: 100dvh; color: #efe6d2; font: 500 17px/1.5 var(--sans); position: relative; overflow-x: clip;
+  background: var(--grain), radial-gradient(90% 40% at 50% 104%, rgba(214, 100, 70, 0.55), transparent 70%), radial-gradient(60% 30% at 80% 8%, rgba(120, 110, 220, 0.2), transparent 70%), linear-gradient(#0c102b, var(--night2) 55%, #3a2850 100%);
+  background-attachment: fixed;
+  padding-block: 0 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3, p, ol { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--glow2); outline-offset: 2px; }
+.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.sky i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff6dc; animation: twinkle 4s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 0.95; transform: scale(1.25); } }
+.sky svg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 22vh; min-height: 120px; }
+.wrap { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; }
+
+/* ---------- hanging string ---------- */
+.string { position: relative; height: 112px; margin: 0 -16px; pointer-events: none; overflow-x: clip; }
+.string::before { content: ""; position: absolute; left: -2%; right: -2%; top: 14px; height: 38px; border-top: 2px solid rgba(255, 220, 160, 0.4); border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+.hang { position: absolute; top: 0; width: 38px; transform-origin: 50% 14px; animation: sway 5s ease-in-out infinite alternate; }
+.hang svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 16px rgba(255, 170, 80, 0.75)); }
+@keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+
+/* ---------- top ---------- */
+.top { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 6px 0 20px; text-align: center; }
+.title { position: relative; padding: 10px 40px 12px; color: var(--paper-ink); background: var(--grain), linear-gradient(#f6ecd4, var(--paper)); box-shadow: 0 10px 18px -6px rgba(0, 0, 0, 0.7), 0 0 0 3px rgba(21, 19, 28, 0.9), 0 0 0 5px rgba(233, 196, 106, 0.8); transform: rotate(-0.8deg); }
+.title h1 { font: 800 clamp(2rem, 5.5vw, 3rem)/1 var(--serif); letter-spacing: 0.12em; }
+.title p { font: 700 0.74rem/1.2 var(--sans); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 6px; opacity: 0.7; }
+.tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.tabs { display: flex; gap: 8px; }
+.tabs button, .sizes button { cursor: pointer; padding: 8px 18px; border-radius: 999px; font: 700 0.95rem/1 var(--sans); letter-spacing: 0.06em; color: #e6d7b2; background: rgba(10, 12, 32, 0.45); border: 1.5px solid rgba(233, 196, 106, 0.4); transition: background 0.4s var(--ease), color 0.4s, transform 0.4s var(--ease); }
+.tabs button:hover, .sizes button:hover { transform: translateY(-2px); }
+.tabs button[aria-pressed="true"], .sizes button[aria-pressed="true"] { color: #2a1708; background: linear-gradient(#ffe39a, var(--glow)); border-color: #ffe9b0; box-shadow: 0 0 18px rgba(246, 195, 91, 0.45); }
+.sizes { display: flex; gap: 6px; } .sizes button { padding: 8px 13px; font-size: 0.85rem; }
+.help { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font: 800 1.1rem/1 var(--serif); color: #e6d7b2; background: rgba(10, 12, 32, 0.45); border: 1.5px solid rgba(233, 196, 106, 0.4); transition: transform 0.4s var(--ease); }
+.help:hover { transform: rotate(12deg) scale(1.08); }
+
+/* ---------- layout ---------- */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; justify-items: center; }
+.side { width: 100%; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.rules { display: none; }
+
+/* ---------- board ---------- */
+.tray { position: relative; width: min(100%, 640px); padding: clamp(10px, 2.4vw, 18px); border-radius: 10px; background: var(--grain), repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 7px), linear-gradient(145deg, #231b2c, #0d0a12 70%); box-shadow: 0 0 0 2px #05030a, 0 0 0 4px rgba(233, 196, 106, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.1), 0 28px 44px -14px rgba(0, 0, 0, 0.85), 0 0 60px -10px rgba(246, 195, 91, var(--halo, 0)); transition: box-shadow 1s var(--ease); }
+.board { display: grid; gap: clamp(3px, 0.8vw, 5px); grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+.cell { position: relative; aspect-ratio: 1; padding: 0; border: 0; border-radius: 3px; cursor: pointer; display: grid; place-items: center; background: var(--grain), repeating-linear-gradient(35deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 5px), linear-gradient(150deg, var(--dim), var(--dim2)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), inset 0 -3px 5px rgba(0, 0, 0, 0.28); -webkit-tap-highlight-color: transparent; transition: transform 0.35s var(--ease); isolation: isolate; }
+.cell::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; opacity: 0; background: var(--grain), radial-gradient(circle at 50% 46%, #fff3c4, #ffd776 55%, #f2ac40); box-shadow: 0 0 14px 1px rgba(255, 196, 90, 0.55); transition: opacity 0.2s ease; }
+.cell.lit::before { opacity: 1; transition: opacity 0.55s ease var(--d, 0ms); }
+.cell:not(.wall):hover { transform: scale(1.04); z-index: 2; }
+.cell.wall { cursor: default; background: var(--grain), radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08), transparent 50%), linear-gradient(150deg, #1d1b26, #0b0a10); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 2px 3px rgba(255, 255, 255, 0.06), inset 0 -4px 6px rgba(0, 0, 0, 0.6); }
+.cell.wall::before { display: none; }
+.cell .n { font: 800 clamp(1.1rem, 4.4vw, 1.9rem)/1 var(--serif); color: var(--gold); text-shadow: 0 1px 0 #000, 0 0 12px rgba(233, 196, 106, 0.35); transition: color 0.4s, transform 0.4s var(--ease); }
+.cell.wall[data-s="ok"] .n { color: var(--jade); text-shadow: 0 0 12px rgba(143, 211, 170, 0.5); }
+.cell.wall[data-s="over"] .n { color: var(--coral); animation: nope 0.45s ease; }
+@keyframes nope { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.lan { position: absolute; width: 62%; left: 19%; top: 11%; opacity: 0; transform: translateY(-10px) scale(0.4); transition: opacity 0.25s ease, transform 0.5s var(--ease); filter: drop-shadow(0 3px 3px rgba(60, 20, 0, 0.5)); pointer-events: none; }
+.cell.lamp .lan { opacity: 1; transform: none; animation: bob 3.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-2px) rotate(1.2deg); } }
+.cell.clash .lan { animation: warn 0.8s ease-in-out infinite; }
+@keyframes warn { 50% { transform: scale(1.08); filter: drop-shadow(0 0 8px #ff3a20) drop-shadow(0 0 3px #ff3a20); } }
+.cell.clash { box-shadow: inset 0 0 0 2px var(--coral); }
+.cell.lock { box-shadow: inset 0 0 0 2px var(--gold); }
+.dot { position: absolute; width: 22%; height: 22%; left: 39%; top: 39%; border-radius: 50%; background: var(--ink); opacity: 0; transform: scale(0.3); transition: opacity 0.2s, transform 0.4s var(--ease); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.25); pointer-events: none; }
+.cell.lit .dot { box-shadow: none; }
+.cell.mark .dot { opacity: 0.8; transform: none; }
+.meter { width: min(100%, 640px); display: grid; gap: 8px; }
+.meter p { display: flex; justify-content: space-between; align-items: baseline; font: 700 0.95rem/1.2 var(--sans); }
+.meter p b { font: 800 1.5rem/1 var(--serif); color: var(--glow2); font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 6px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg, #f2ac40, var(--glow2)); box-shadow: 0 0 12px rgba(246, 195, 91, 0.8); transition: width 0.7s var(--ease); }
+.coach { width: min(100%, 640px); min-height: 3.1em; font-size: 0.98rem; color: #d9ccaa; text-align: center; }
+.coach b { display: block; font: 700 1.1rem/1.2 var(--serif); color: #fff1cb; margin-bottom: 2px; }
+.coach.bad b { color: var(--coral); }
+.acts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.btn { white-space: nowrap; cursor: pointer; padding: 11px 18px; border-radius: 999px; font: 700 0.95rem/1 var(--sans); letter-spacing: 0.04em; color: #2a1708; border: 0; background: linear-gradient(#ffe39a, var(--glow)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 4px 0 #a9741c, 0 8px 12px rgba(0, 0, 0, 0.4); transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), opacity 0.3s; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); } .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #a9741c; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.dark { color: #e6d7b2; background: rgba(10, 12, 32, 0.5); box-shadow: inset 0 0 0 1.5px rgba(233, 196, 106, 0.4); }
+.btn.red { color: #fff0d8; background: linear-gradient(#e8604a, var(--red)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 4px 0 var(--red2), 0 8px 12px rgba(0, 0, 0, 0.4); }
+.btn.ghost { color: var(--paper-ink); background: transparent; box-shadow: inset 0 0 0 1.5px rgba(42, 35, 48, 0.5); }
+.clock { text-align: center; font: 800 2rem/1 var(--serif); font-variant-numeric: tabular-nums; color: #fff1cb; }
+.clock small { display: block; font: 700 0.68rem/1 var(--sans); letter-spacing: 0.2em; text-transform: uppercase; color: #b9aa86; margin-top: 6px; }
+.card { position: relative; padding: 18px 20px; color: var(--paper-ink); background: var(--grain), repeating-linear-gradient(0deg, rgba(120, 90, 50, 0.05) 0 1px, transparent 1px 4px), linear-gradient(160deg, #f6ecd4, var(--paper)); box-shadow: 0 14px 22px -10px rgba(0, 0, 0, 0.8); transform: rotate(0.5deg); }
+.card h3 { font: 800 1.15rem/1.1 var(--serif); letter-spacing: 0.08em; margin-bottom: 10px; color: var(--red2); }
+.card ol { list-style: none; padding: 0; display: grid; gap: 10px; counter-reset: r; font-size: 0.95rem; }
+.card li { counter-increment: r; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; }
+.card li::before { content: counter(r); width: 26px; height: 26px; display: grid; place-items: center; font: 800 0.95rem/1 var(--serif); color: #fff0d8; background: var(--red); border-radius: 50%; }
+.slip { position: relative; width: min(100%, 640px); padding: 22px 22px 20px; text-align: center; color: var(--paper-ink); background: var(--grain), repeating-linear-gradient(0deg, rgba(120, 90, 50, 0.05) 0 1px, transparent 1px 4px), linear-gradient(160deg, #f6ecd4, var(--paper)); box-shadow: 0 0 0 3px rgba(21, 19, 28, 0.9), 0 0 0 5px rgba(233, 196, 106, 0.8), 0 18px 28px -10px rgba(0, 0, 0, 0.8); }
+.slip h2 { font: 800 1.9rem/1.05 var(--serif); letter-spacing: 0.1em; color: var(--red2); }
+.slip.lost h2 { color: #5b4d6b; }
+.slip p { margin-top: 6px; }
+.slip .stats { display: flex; justify-content: center; gap: 30px; margin: 14px 0 4px; }
+.slip .stats div { display: grid; gap: 3px; } .slip .stats b { font: 800 1.8rem/1 var(--serif); font-variant-numeric: tabular-nums; } .slip .stats span { font: 700 0.66rem/1 var(--sans); letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
+.slip .foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.slip .next { margin-top: 12px; font: 700 0.74rem/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.record { width: min(100%, 640px); }
+.record h3 { font: 700 0.7rem/1 var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: #b9aa86; padding-bottom: 10px; border-bottom: 1px solid rgba(233, 196, 106, 0.25); margin-bottom: 12px; }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+.nums div { display: grid; gap: 4px; } .nums b { font: 800 1.7rem/1 var(--serif); font-variant-numeric: tabular-nums; color: #fff1cb; } .nums span { white-space: nowrap; font: 700 0.6rem/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: #b9aa86; }
+.float { position: fixed; z-index: 30; width: 44px; bottom: -80px; pointer-events: none; filter: drop-shadow(0 0 18px rgba(255, 170, 80, 0.9)); }
+
+/* ---------- how to play ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 14px max(14px, env(safe-area-inset-left, 0px)); background: rgba(6, 8, 22, 0.8); animation: fadein 0.3s ease-out both; }
+@keyframes fadein { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(22px) scale(0.97); } }
+.how { --loop: 15s; width: 100%; max-width: 480px; max-height: 100%; overflow: auto; padding: 24px 22px 20px; display: grid; gap: 14px; color: var(--paper-ink); background: var(--grain), repeating-linear-gradient(0deg, rgba(120, 90, 50, 0.05) 0 1px, transparent 1px 4px), linear-gradient(160deg, #f6ecd4, var(--paper)); box-shadow: 0 0 0 3px rgba(21, 19, 28, 0.9), 0 0 0 5px rgba(233, 196, 106, 0.8), 0 30px 70px -10px rgba(0, 0, 0, 0.9); animation: rise 0.7s var(--ease) both; }
+.how h2 { font: 800 1.7rem/1 var(--serif); letter-spacing: 0.1em; color: var(--red2); }
+.how .lead { margin-top: -6px; opacity: 0.85; }
+.demo { display: grid; justify-items: center; gap: 10px; padding: 14px; background: linear-gradient(160deg, #231b2c, #0d0a12); border-radius: 8px; }
+.demo .board { --n: 4; width: min(100%, 220px); gap: 4px; }
+.demo .cell { cursor: default; } .demo .cell:hover { transform: none; }
+.demo .cell .lan { transition: none; }
+.demo .cell.wall .n { color: var(--gold); }
+.caps { position: relative; width: 100%; height: 2.9em; color: #f3e6c4; font-size: 0.95rem; text-align: center; }
+.caps span { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; line-height: 1.3; }
+.how ol { list-style: none; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+.how li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; }
+.how li::before { content: counter(s); width: 26px; height: 26px; display: grid; place-items: center; font: 800 0.95rem/1 var(--serif); color: #fff0d8; background: var(--red); border-radius: 50%; }
+.how .foot3 { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.how .foot3 p { font-size: 0.88rem; opacity: 0.75; }
+
+@media (min-width: 1100px) {
+  .stage { grid-template-columns: 270px minmax(0, 640px) 270px; justify-content: center; align-items: start; gap: 36px; }
+  .stage > .mid { grid-column: 2; display: grid; gap: 18px; justify-items: center; min-width: 0; }
+  .stage > .mid > * { min-width: 0; }
+  .rules { display: block; grid-column: 1; grid-row: 1; margin-top: 8px; }
+  .stage > .side { grid-column: 3; grid-row: 1; margin-top: 8px; }
+  .stage > .side .record { width: 100%; }
+}
+@media (max-width: 1099px) { .stage > .mid { display: grid; gap: 18px; justify-items: center; width: 100%; min-width: 0; } .stage > .mid > * { min-width: 0; } .side { justify-items: center; } }
+@media (max-width: 440px) { .title { padding-inline: 28px; } .string { height: 92px; } .hang { width: 30px; } .tabs button { padding: 8px 14px; } .nums b { font-size: 1.4rem; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="lb" x1="0" x2="1"><stop offset="0" stop-color="#8e1f12"/><stop offset="0.35" stop-color="#ee5b3e"/><stop offset="0.6" stop-color="#d8432f"/><stop offset="1" stop-color="#7d1a10"/></linearGradient>
+    <symbol id="lanS" viewBox="0 0 40 58">
+      <path d="M20 0v6" stroke="#2a1a10" stroke-width="1.6"/>
+      <rect x="11" y="5" width="18" height="6" rx="1.5" fill="#2a1d14"/>
+      <path d="M11 11C-1 16-1 40 11 46h18c12-6 12-30 0-35z" fill="url(#lb)"/>
+      <path d="M12 11c-6 8-6 28 0 35M20 10.5v36M28 11c6 8 6 28 0 35" fill="none" stroke="#5b0f08" stroke-width="1" opacity="0.6"/>
+      <path d="M5 21c9 3 21 3 30 0M3.5 29c11 3.5 22 3.5 33 0M5 37c9 3 21 3 30 0" fill="none" stroke="#ffb18a" stroke-width="0.9" opacity="0.45"/>
+      <rect x="11" y="45" width="18" height="5" rx="1.5" fill="#2a1d14"/>
+      <path d="M17 50v6M20 50v8M23 50v6" stroke="#e9c46a" stroke-width="1.4" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="sky" id="sky" aria-hidden="true">
+  <svg viewBox="0 0 1200 200" preserveAspectRatio="none"><path d="M0 200V120l90-48 70 40 120-86 110 70 80-34 130 78 90-52 120 66 100-62 110 58 120-70 160 78V200z" fill="#0a0b1e" opacity="0.85"/><path d="M0 200v-48l140-34 90 30 160-48 120 40 130-36 150 38 120-30 140 34 150-26V200z" fill="#06060f"/></svg>
+</div>
+
+<div class="wrap">
+  <div class="string" id="string" aria-hidden="true"></div>
+  <header class="top">
+    <div class="title"><h1>Lanterns</h1><p id="sub"></p></div>
+    <div class="tools">
+      <div class="tabs" role="group" aria-label="Mode"><button type="button" id="mDaily" aria-pressed="true">Daily</button><button type="button" id="mEndless" aria-pressed="false">Endless</button></div>
+      <div class="sizes" id="sizes" role="group" aria-label="Board size" hidden><button type="button" data-z="5" aria-pressed="false">5×5</button><button type="button" data-z="6" aria-pressed="true">6×6</button><button type="button" data-z="7" aria-pressed="false">7×7</button></div>
+      <button type="button" class="help" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <aside class="card rules" aria-label="The rules">
+      <h3>The rules</h3>
+      <ol>
+        <li><span>A lantern lights its whole row and column, up to the next wall.</span></li>
+        <li><span>Light up <b>every</b> paper square.</span></li>
+        <li><span>No lantern may sit in another lantern's light.</span></li>
+        <li><span>A number on a wall is how many lanterns touch it.</span></li>
+      </ol>
+    </aside>
+    <div class="mid">
+      <div class="meter"><p><span id="dleft">Squares still dark</span><b id="dn">0</b></p><div class="bar"><i id="bar"></i></div></div>
+      <div class="tray" id="tray"><div class="board" id="board" role="grid" aria-label="Lantern board"></div></div>
+      <div class="coach" id="coach" aria-live="polite"></div>
+      <div class="slip" id="slip" hidden></div>
+    </div>
+    <aside class="side">
+      <div class="clock"><span id="clock">00:00</span><small id="hintn">Time</small></div>
+      <div class="acts" id="acts"><button type="button" class="btn dark" id="undo">Undo</button><button type="button" class="btn" id="hint">Hint</button><button type="button" class="btn dark" id="clear">Clear</button><button type="button" class="btn dark" id="giveup">Show answer</button></div>
+      <section class="record" aria-label="Record"><h3 id="recT">Record</h3><div class="nums" id="nums"></div></section>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="how" id="how" role="dialog" aria-modal="true" aria-labelledby="howT"></div></div>
+
+<script>
+// Lanterns rules. No DOM in here, so the same file runs in the page and in node.
+// A board is { n, walls: [0|1 per cell], nums: { cellIndex: number }, sol: [0|1 per cell] }.
+
+const EPOCH = '2026-11-09';
+
+function hashStr(s) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed | 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function dateKey(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function dayNumber(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const [ey, em, ed] = EPOCH.split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ey, em - 1, ed)) / 86400000) + 1;
+}
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000), p = (x) => String(x).padStart(2, '0');
+  return p(Math.floor(s / 60)) + ':' + p(s % 60);
+}
+
+// Every white square a lantern on square i would light, itself included. Walls block the light.
+function sightLines(n, walls) {
+  const out = [];
+  for (let i = 0; i < n * n; i++) {
+    if (walls[i]) { out.push([]); continue; }
+    const r = Math.floor(i / n), c = i % n, list = [i];
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dr, dc]) => {
+      let rr = r + dr, cc = c + dc;
+      while (rr >= 0 && rr < n && cc >= 0 && cc < n && !walls[rr * n + cc]) { list.push(rr * n + cc); rr += dr; cc += dc; }
+    });
+    out.push(list);
+  }
+  return out;
+}
+function wallNeighbours(n, i) {
+  const r = Math.floor(i / n), c = i % n, out = [];
+  if (r > 0) out.push(i - n); if (r < n - 1) out.push(i + n); if (c > 0) out.push(i - 1); if (c < n - 1) out.push(i + 1);
+  return out;
+}
+
+// How many different full solutions the board has (stops counting at `limit`).
+function countSolutions(n, walls, nums, limit) {
+  const see = sightLines(n, walls), N = n * n;
+  const lit = new Array(N).fill(0), lamp = new Array(N).fill(0), have = {};
+  const numbered = Object.keys(nums).map(Number);
+  numbered.forEach((w) => { have[w] = 0; });
+  const touch = []; for (let i = 0; i < N; i++) touch.push(walls[i] ? [] : wallNeighbours(n, i).filter((x) => nums[x] !== undefined));
+  let found = 0;
+  function roomFor(w) { // lanterns that could still be added next to wall w
+    let k = 0; wallNeighbours(n, w).forEach((x) => { if (!walls[x] && !lamp[x] && !lit[x]) k++; }); return k;
+  }
+  function ok() { for (const w of numbered) if (have[w] > nums[w] || have[w] + roomFor(w) < nums[w]) return false; return true; }
+  function put(i, d) { see[i].forEach((x) => { lit[x] += d; }); lamp[i] = d > 0 ? 1 : 0; touch[i].forEach((w) => { have[w] += d; }); }
+  function go() {
+    if (found >= limit) return;
+    let cell = -1;
+    for (let i = 0; i < N; i++) if (!walls[i] && lit[i] === 0) { cell = i; break; }
+    if (cell < 0) { for (const w of numbered) if (have[w] !== nums[w]) return; found++; return; }
+    for (const cand of see[cell]) {
+      if (lit[cand] > 0) continue;
+      put(cand, 1);
+      if (ok()) go();
+      put(cand, -1);
+      if (found >= limit) return;
+    }
+  }
+  go();
+  return found;
+}
+
+// One board per seed and size. Walls first, then a lantern layout, then only as many wall numbers as it
+// takes for the board to have exactly one answer.
+function makePuzzle(seedStr, size) {
+  const rnd = mulberry32(hashStr('lanterns/' + seedStr + '/' + size));
+  const n = size, N = n * n;
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const walls = new Array(N).fill(0);
+    const wantWalls = Math.round(N * (0.17 + rnd() * 0.07));
+    let placed = 0;
+    while (placed < wantWalls) { const i = Math.floor(rnd() * N); if (!walls[i]) { walls[i] = 1; placed++; } }
+    const see = sightLines(n, walls), lit = new Array(N).fill(0), sol = new Array(N).fill(0);
+    const order = []; for (let i = 0; i < N; i++) if (!walls[i]) order.push(i);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = order[i]; order[i] = order[j]; order[j] = t; }
+    for (const i of order) if (lit[i] === 0) { sol[i] = 1; see[i].forEach((x) => { lit[x]++; }); }
+    const lamps = sol.reduce((a, b) => a + b, 0);
+    if (lamps < Math.round(n * 0.9)) continue;
+    const nums = {};
+    for (let w = 0; w < N; w++) if (walls[w]) nums[w] = wallNeighbours(n, w).filter((x) => sol[x]).length;
+    if (countSolutions(n, walls, nums, 2) !== 1) continue;
+    const ws = Object.keys(nums).map(Number);
+    for (let i = ws.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = ws[i]; ws[i] = ws[j]; ws[j] = t; }
+    for (const w of ws) {
+      const keep = nums[w]; delete nums[w];
+      if (countSolutions(n, walls, nums, 2) !== 1) nums[w] = keep;
+    }
+    if (Object.keys(nums).length < 3) continue;
+    return { n, walls, nums, sol, lamps };
+  }
+  throw new Error('no board for ' + seedStr);
+}
+
+// What the player's lanterns light, and which of them can see another lantern.
+function status(puz, lamps) {
+  const n = puz.n, N = n * n, see = puz._see || (puz._see = sightLines(n, puz.walls));
+  const lit = new Array(N).fill(0), mine = new Array(N).fill(0);
+  lamps.forEach((i) => { mine[i] = 1; see[i].forEach((x) => { lit[x]++; }); });
+  const clash = []; lamps.forEach((i) => { if (lit[i] > 1) clash.push(i); });
+  const wall = {};
+  Object.keys(puz.nums).forEach((w) => {
+    const have = wallNeighbours(n, +w).filter((x) => mine[x]).length;
+    wall[w] = have === puz.nums[w] ? 'ok' : have > puz.nums[w] ? 'over' : 'open';
+  });
+  let dark = 0; for (let i = 0; i < N; i++) if (!puz.walls[i] && !lit[i]) dark++;
+  const solved = dark === 0 && clash.length === 0 && Object.keys(wall).every((w) => wall[w] === 'ok');
+  return { lit, clash, wall, dark, solved };
+}
+
+// A correct lantern to hand out: one the player hasn't placed yet.
+function hintCell(puz, lamps) {
+  const have = {}; lamps.forEach((i) => { have[i] = 1; });
+  for (let i = 0; i < puz.sol.length; i++) if (puz.sol[i] && !have[i]) return i;
+  return -1;
+}
+function shareText(no, mode, ms, hints) {
+  return 'LANTERNS ' + (mode === 'daily' ? 'No. ' + no : 'Endless') + '  ' + fmtTime(ms) + ' · ' + (hints ? hints + (hints === 1 ? ' hint' : ' hints') : 'no hints');
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { EPOCH, hashStr, mulberry32, dateKey, dayNumber, fmtTime, makePuzzle, status, hintCell, countSolutions, shareText };
+}
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'lanterns:v1';
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var $ = function (id) { return document.getElementById(id); };
+  var todayKey = dateKey(new Date()), dayNo = dayNumber(todayKey);
+  var EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  var LAN = '<svg class="lan" viewBox="0 0 40 58" aria-hidden="true"><use href="#lanS"/></svg>';
+
+  try {
+    var g = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="12"/><feColorMatrix values="0 0 0 0 0.25  0 0 0 0 0.18  0 0 0 0 0.1  0 0 0 0.18 0"/></filter><rect width="220" height="220" filter="url(#g)"/></svg>';
+    document.documentElement.style.setProperty('--grain', 'url("data:image/svg+xml;base64,' + btoa(g) + '")');
+  } catch (e) {}
+  (function () { /* stars */
+    var r = mulberry32(21), h = '';
+    for (var i = 0; i < 46; i++) h += '<i style="left:' + (r() * 100).toFixed(1) + '%;top:' + (r() * 70).toFixed(1) + '%;animation-delay:' + (r() * 4).toFixed(1) + 's;animation-duration:' + (3 + r() * 4).toFixed(1) + 's;width:' + (2 + Math.round(r() * 2)) + 'px;height:' + (2 + Math.round(r() * 2)) + 'px"></i>';
+    $('sky').insertAdjacentHTML('afterbegin', h);
+  })();
+  (function () { /* hanging string: positions fixed so the row sags like a real line */
+    var h = '', n = 9;
+    for (var i = 0; i < n; i++) { var x = 4 + i * (92 / (n - 1)), sag = Math.sin(Math.PI * i / (n - 1)) * 34; h += '<div class="hang" style="left:calc(' + x.toFixed(1) + '% - 19px);top:' + (14 + sag).toFixed(0) + 'px;animation-delay:-' + (i * 0.7).toFixed(1) + 's;animation-duration:' + (4.2 + (i % 3) * 0.8) + 's"><svg viewBox="0 0 40 58"><use href="#lanS"/></svg></div>'; }
+    $('string').innerHTML = h;
+  })();
+
+  function anim(el, kf, o) {
+    if (reduce || !el || !el.animate) return null;
+    var opt = { duration: 450, easing: EASE, fill: 'backwards' };
+    for (var k in o) opt[k] = o[k];
+    try { return el.animate(kf, opt); } catch (e) { return null; }
+  }
+
+  /* ---------- saved ---------- */
+  function clean(s) { s = s || {}; return { played: +s.played || 0, won: +s.won || 0, streak: +s.streak || 0, best: +s.best || 0, lastWin: +s.lastWin || 0 }; }
+  function load() {
+    var o = null;
+    try { var r = localStorage.getItem(KEY); if (r) o = JSON.parse(r); } catch (e) { o = null; }
+    o = (o && typeof o === 'object') ? o : {};
+    return { seen: !!o.seen, es: [5, 6, 7].indexOf(+o.es) >= 0 ? +o.es : 6, sd: clean(o.sd), se: clean(o.se), d: o.d || null, e: o.e || null };
+  }
+  var store = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function newSeed() { return 'r' + Math.random().toString(36).slice(2, 9); }
+  function dailySize(k) { return 6 + (hashStr('size/' + k) % 2); }
+
+  /* ---------- state ---------- */
+  var S = { mode: 'daily', size: 6, seed: '', puz: null, cells: [], lock: {}, hist: [], ms: 0, t0: 0, hints: 0, done: false, won: false, gaveUp: false, last: -1 };
+  var timerOn = false, giveTimer = 0, cellEls = [], prevLit = [];
+  function rec() { return S.mode === 'daily' ? store.d : store.e; }
+  function stats() { return S.mode === 'daily' ? store.sd : store.se; }
+  function elapsed() { return S.ms + (timerOn ? Date.now() - S.t0 : 0); }
+  function startClock() { if (!timerOn && !S.done) { S.t0 = Date.now(); timerOn = true; } }
+  function stopClock() { if (timerOn) { S.ms += Date.now() - S.t0; timerOn = false; } }
+  function save1() { var r = rec(); if (!r) return; r.c = S.cells.join(''); r.lk = Object.keys(S.lock).map(Number); r.ms = elapsed(); r.hints = S.hints; r.done = S.done; r.won = S.won; r.gu = S.gaveUp; save(); }
+  function lamps() { var a = []; S.cells.forEach(function (v, i) { if (v === 1) a.push(i); }); return a; }
+
+  /* ---------- board ---------- */
+  function buildBoard() {
+    var p = S.puz, n = p.n, h = '';
+    $('board').style.setProperty('--n', n);
+    for (var i = 0; i < n * n; i++) {
+      var r = Math.floor(i / n) + 1, c = i % n + 1;
+      if (p.walls[i]) h += '<div class="cell wall" role="gridcell" data-i="' + i + '" aria-label="Wall' + (p.nums[i] !== undefined ? ' ' + p.nums[i] : '') + '">' + (p.nums[i] !== undefined ? '<span class="n">' + p.nums[i] + '</span>' : '') + '</div>';
+      else h += '<button type="button" class="cell" role="gridcell" data-i="' + i + '" aria-label="Row ' + r + ' column ' + c + '">' + LAN + '<i class="dot"></i></button>';
+    }
+    $('board').innerHTML = h; cellEls = []; prevLit = new Array(n * n).fill(0);
+    var all = $('board').children; for (var k = 0; k < all.length; k++) cellEls.push(all[k]);
+  }
+  function dist(a, b) { var n = S.puz.n; return Math.abs(Math.floor(a / n) - Math.floor(b / n)) + Math.abs(a % n - b % n); }
+  function paint() {
+    var p = S.puz, st = status(p, lamps()), N = p.n * p.n, clash = {};
+    st.clash.forEach(function (i) { clash[i] = 1; });
+    for (var i = 0; i < N; i++) {
+      var el = cellEls[i];
+      if (p.walls[i]) { if (p.nums[i] !== undefined) { var s = st.wall[i], was = el.getAttribute('data-s'); el.setAttribute('data-s', s); if (s === 'over' && was !== 'over') { var nn = el.firstChild; nn.style.animation = 'none'; void nn.offsetWidth; nn.style.animation = ''; } } continue; }
+      var lit = st.lit[i] > 0;
+      if (lit && !prevLit[i] && S.last >= 0) el.style.setProperty('--d', (dist(i, S.last) * 45) + 'ms'); else el.style.setProperty('--d', '0ms');
+      el.classList.toggle('lit', lit); el.classList.toggle('lamp', S.cells[i] === 1); el.classList.toggle('mark', S.cells[i] === 2);
+      el.classList.toggle('clash', !!clash[i]); el.classList.toggle('lock', !!S.lock[i]);
+      el.setAttribute('aria-label', 'Row ' + (Math.floor(i / p.n) + 1) + ' column ' + (i % p.n + 1) + (S.cells[i] === 1 ? ', lantern' : S.cells[i] === 2 ? ', dot' : '') + (lit ? ', lit' : ', dark'));
+      prevLit[i] = lit ? 1 : 0;
+    }
+    var open = 0; for (var j = 0; j < N; j++) if (!p.walls[j]) open++;
+    $('dn').textContent = st.dark; $('bar').style.width = Math.round((open - st.dark) / open * 100) + '%';
+    $('undo').disabled = S.done || !S.hist.length; $('clear').disabled = S.done || !S.cells.some(function (v, i) { return v && !S.lock[i]; }); $('hint').disabled = S.done;
+    $('hintn').textContent = S.hints ? 'Time · ' + S.hints + (S.hints === 1 ? ' hint' : ' hints') : 'Time';
+    return st;
+  }
+  function coach(st) {
+    var c = $('coach'); c.classList.remove('bad');
+    if (S.done) return;
+    var over = Object.keys(st.wall).filter(function (w) { return st.wall[w] === 'over'; }).length;
+    if (st.clash.length) { c.classList.add('bad'); c.innerHTML = '<b>Two lanterns can see each other</b>Move one of the glowing red ones.'; }
+    else if (over) { c.classList.add('bad'); c.innerHTML = '<b>Too many lanterns by a wall</b>A wall number is the exact number of lanterns touching it.'; }
+    else if (!S.cells.some(function (v) { return v; })) c.innerHTML = '<b>Tap a square to place a lantern</b>Tap again for a dot (no lantern here), and once more to clear it.';
+    else if (st.dark) c.innerHTML = '<b>' + st.dark + (st.dark === 1 ? ' square is' : ' squares are') + ' still dark</b>Every paper square needs light.';
+    else c.innerHTML = '<b>All lit, but a wall number is off</b>Check the numbers: green means that wall is right.';
+  }
+  function refresh() { var st = paint(); coach(st); return st; }
+
+  /* ---------- play ---------- */
+  function push() { S.hist.push(S.cells.join('')); if (S.hist.length > 60) S.hist.shift(); }
+  function press(i) {
+    if (S.done || S.puz.walls[i]) return;
+    var el = cellEls[i]; startClock();
+    if (S.lock[i]) { anim(el, [{ transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'none' }], { duration: 260, fill: 'none' }); return; }
+    push();
+    S.cells[i] = (S.cells[i] + 1) % 3;
+    S.last = S.cells[i] === 1 ? i : -1;
+    if (S.cells[i] === 1) anim(el.querySelector('.lan'), [{ transform: 'translateY(-26px) scale(0.5)', opacity: 0 }, { transform: 'translateY(3px) scale(1.08)', opacity: 1, offset: 0.65 }, { transform: 'none', opacity: 1 }], { duration: 560 });
+    var st = refresh(); save1();
+    if (st.solved) finish(true);
+  }
+  function undo() {
+    if (S.done || !S.hist.length) return;
+    var s = S.hist.pop(); S.cells = s.split('').map(Number); Object.keys(S.lock).forEach(function (i) { S.cells[i] = 1; });
+    S.last = -1; refresh(); save1();
+  }
+  function clearAll() {
+    if (S.done) return; push();
+    S.cells = S.cells.map(function (v, i) { return S.lock[i] ? 1 : 0; }); S.last = -1; refresh(); save1();
+  }
+  function hint() {
+    if (S.done) return; startClock();
+    var c = hintCell(S.puz, lamps().filter(function (i) { return S.puz.sol[i]; }));
+    if (c < 0) return;
+    var see = [], n = S.puz.n;
+    lamps().forEach(function (i) { if (!S.puz.sol[i] && (Math.floor(i / n) === Math.floor(c / n) || i % n === c % n)) see.push(i); });
+    see.forEach(function (i) { S.cells[i] = 0; });
+    S.cells[c] = 1; S.lock[c] = true; S.hints++; S.last = c;
+    var st = refresh(); save1();
+    var el = cellEls[c]; anim(el, [{ transform: 'scale(1.25)' }, { transform: 'none' }], { duration: 600, fill: 'none' });
+    if (st.solved) finish(true);
+  }
+  function giveUp() {
+    if (S.done) return;
+    var b = $('giveup');
+    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Sure?'; clearTimeout(giveTimer); giveTimer = setTimeout(function () { b.removeAttribute('data-sure'); b.textContent = 'Show answer'; }, 3000); return; }
+    S.gaveUp = true; S.cells = S.puz.sol.map(function (v) { return v ? 1 : 0; }); S.last = -1; refresh(); finish(false);
+  }
+  $('board').addEventListener('click', function (e) { var b = e.target.closest('.cell'); if (b && !b.classList.contains('wall')) press(+b.getAttribute('data-i')); });
+  $('board').addEventListener('keydown', function (e) {
+    var b = e.target.closest('.cell'); if (!b) return;
+    var i = +b.getAttribute('data-i'), n = S.puz.n, d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowDown' ? n : e.key === 'ArrowUp' ? -n : 0;
+    if (!d) return; e.preventDefault();
+    var j = i + d; while (j >= 0 && j < n * n && (S.puz.walls[j] || (Math.abs(d) === 1 && Math.floor(j / n) !== Math.floor(i / n)))) { if (Math.abs(d) === 1 && Math.floor(j / n) !== Math.floor(i / n)) { j = -1; break; } j += d; }
+    if (j >= 0 && j < n * n && cellEls[j]) cellEls[j].focus();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!$('ov').hidden) { if (e.key === 'Escape') closeHow(); return; }
+    if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); undo(); }
+  });
+  $('undo').addEventListener('click', undo); $('clear').addEventListener('click', clearAll); $('hint').addEventListener('click', hint); $('giveup').addEventListener('click', giveUp);
+
+  /* ---------- finishing ---------- */
+  function release(n) {
+    if (reduce) return;
+    for (var i = 0; i < n; i++) {
+      var d = document.createElement('div'); d.className = 'float'; d.setAttribute('aria-hidden', 'true'); d.innerHTML = '<svg viewBox="0 0 40 58" width="100%"><use href="#lanS"/></svg>';
+      var x = 4 + Math.random() * 90, sc = 0.7 + Math.random() * 0.8; d.style.left = x + '%'; d.style.width = (36 * sc) + 'px';
+      document.body.appendChild(d);
+      var a = d.animate([{ transform: 'translate(0,0) rotate(-4deg)', opacity: 0 }, { opacity: 1, offset: 0.12 }, { transform: 'translate(' + ((Math.random() - 0.5) * 80) + 'px,-' + (window.innerHeight + 140) + 'px) rotate(5deg)', opacity: 0.9, offset: 0.9 }, { opacity: 0 }], { duration: 4500 + Math.random() * 3500, delay: Math.random() * 1400, easing: 'cubic-bezier(0.3, 0.1, 0.4, 1)', fill: 'backwards' });
+      a.onfinish = (function (el) { return function () { el.remove(); }; })(d);
+    }
+  }
+  function finish(won) {
+    stopClock(); S.done = true; S.won = won;
+    var st = stats(); st.played++;
+    if (won) { st.won++; st.streak = (S.mode === 'daily') ? ((st.lastWin === dayNo - 1 || st.lastWin === dayNo) ? st.streak + 1 : 1) : st.streak + 1; if (S.mode === 'daily') st.lastWin = dayNo; if (!st.best || S.ms < st.best) st.best = S.ms; } else st.streak = 0;
+    save1(); save(); refresh();
+    $('acts').hidden = true; $('clock').textContent = fmtTime(S.ms);
+    $('coach').innerHTML = won ? '<b>Every square is lit</b>' + (S.hints ? 'Done with ' + S.hints + (S.hints === 1 ? ' hint.' : ' hints.') : 'Done without a single hint.') : '<b>Here is the answer</b>Every lantern is in its place.';
+    if (won) {
+      $('tray').style.setProperty('--halo', '0.9');
+      var els = cellEls.filter(function (e) { return e.classList.contains('lamp'); });
+      els.forEach(function (e, i) { anim(e.querySelector('.lan'), [{ transform: 'none' }, { transform: 'translateY(-10px) scale(1.2)', filter: 'drop-shadow(0 0 14px #ffb14a)' }, { transform: 'none' }], { duration: 800, delay: 150 + i * 70, fill: 'none' }); });
+      release(26);
+    }
+    setTimeout(function () { showSlip(false); renderRecord(); }, reduce || !won ? 0 : 1100);
+  }
+  function showSlip(instant) {
+    var sl = $('slip'), txt = shareText(dayNo, S.mode, S.ms, S.hints);
+    sl.className = 'slip' + (S.won ? '' : ' lost');
+    sl.innerHTML = '<h2>' + (S.won ? 'All lit' : 'Answer shown') + '</h2><p>' + (S.won ? 'The whole board is glowing.' : 'You gave up on this one.') + '</p>' +
+      '<div class="stats"><div><b>' + fmtTime(S.ms) + '</b><span>Time</span></div><div><b>' + S.hints + '</b><span>Hints</span></div></div>' +
+      '<div class="foot"><button type="button" class="btn" id="copy">Copy result</button>' + (S.mode === 'daily' ? '<button type="button" class="btn ghost" id="toEnd">Play endless</button>' : '<button type="button" class="btn red" id="nextM">Next board</button><button type="button" class="btn ghost" id="toDaily">Back to daily</button>') + '</div>' + (S.mode === 'daily' ? '<p class="next" id="nextin"></p>' : '');
+    sl.hidden = false;
+    $('copy').addEventListener('click', function () { var b = this, done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy result'; }, 1600); }; try { navigator.clipboard.writeText(txt).then(done, function () { fb(txt); done(); }); } catch (e) { fb(txt); done(); } });
+    var a = $('toEnd'); if (a) a.addEventListener('click', function () { go('endless'); });
+    var n = $('nextM'); if (n) n.addEventListener('click', function () { store.e = null; init('endless'); });
+    var d = $('toDaily'); if (d) d.addEventListener('click', function () { go('daily'); });
+    tick();
+    if (!instant) { if (window.innerWidth < 1100 && !reduce) { try { sl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} } anim(sl, [{ opacity: 0, transform: 'translateY(18px) scale(0.97)' }, { opacity: 1, transform: 'none' }], { duration: 700 }); }
+  }
+  function fb(t) { var a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(a); }
+  function renderRecord() {
+    var st = stats();
+    $('recT').textContent = 'Record · ' + (S.mode === 'daily' ? 'Daily' : 'Endless');
+    $('nums').innerHTML = '<div><b>' + st.won + '</b><span>Solved</span></div><div><b>' + st.streak + '</b><span>Streak</span></div><div><b>' + (st.best ? fmtTime(st.best) : '–') + '</b><span>Best time</span></div><div><b>' + st.played + '</b><span>Played</span></div>';
+  }
+
+  /* ---------- modes ---------- */
+  function init(mode) {
+    S.mode = mode; stopClock(); $('tray').style.setProperty('--halo', '0');
+    $('mDaily').setAttribute('aria-pressed', mode === 'daily'); $('mEndless').setAttribute('aria-pressed', mode === 'endless');
+    $('sizes').hidden = mode !== 'endless';
+    var r = rec();
+    if (mode === 'daily') { if (!r || r.key !== todayKey) { store.d = r = { key: todayKey, c: '', lk: [], ms: 0, hints: 0, done: false, won: false }; save(); } S.seed = todayKey; S.size = dailySize(todayKey); }
+    else { if (!r || !r.seed) { store.e = r = { seed: newSeed(), size: store.es, c: '', lk: [], ms: 0, hints: 0, done: false, won: false }; save(); } S.seed = r.seed; S.size = r.size; }
+    var bs = $('sizes').children; for (var z = 0; z < bs.length; z++) bs[z].setAttribute('aria-pressed', +bs[z].getAttribute('data-z') === S.size);
+    S.puz = makePuzzle(S.seed, S.size);
+    var N = S.size * S.size;
+    S.cells = (r.c && r.c.length === N) ? r.c.split('').map(Number) : new Array(N).fill(0);
+    S.lock = {}; (r.lk || []).forEach(function (i) { S.lock[i] = true; });
+    S.hist = []; S.last = -1; S.ms = +r.ms || 0; S.hints = +r.hints || 0; S.done = !!r.done; S.won = !!r.won; S.gaveUp = !!r.gu; timerOn = false;
+    $('sub').textContent = mode === 'daily' ? 'No. ' + dayNo + ' · ' + new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Endless · ' + S.size + '×' + S.size;
+    var gb = $('giveup'); gb.removeAttribute('data-sure'); gb.textContent = 'Show answer';
+    $('slip').hidden = true; $('acts').hidden = S.done;
+    buildBoard(); S.last = -1; prevLit = new Array(N).fill(0);
+    var st = refresh(); renderRecord(); $('clock').textContent = fmtTime(S.ms);
+    if (S.done) {
+      $('coach').innerHTML = S.won ? '<b>Every square is lit</b>' + (S.hints ? 'Done with ' + S.hints + (S.hints === 1 ? ' hint.' : ' hints.') : 'Done without a single hint.') : '<b>Here is the answer</b>Every lantern is in its place.';
+      if (S.won) $('tray').style.setProperty('--halo', '0.9'); showSlip(true);
+    }
+    var cs = cellEls; for (var i = 0; i < cs.length; i++) anim(cs[i], [{ opacity: 0, transform: 'translateY(10px) scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 120 + (Math.floor(i / S.size) + i % S.size) * 40 });
+    anim($('tray'), [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 700 });
+  }
+  function go(m) { init(m); try { location.hash = m; } catch (e) {} }
+  window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if ((h === 'daily' || h === 'endless') && h !== S.mode) init(h); });
+  $('mDaily').addEventListener('click', function () { go('daily'); }); $('mEndless').addEventListener('click', function () { go('endless'); });
+  $('sizes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var z = +b.getAttribute('data-z'); if (z === S.size) return; store.es = z; store.e = null; init('endless'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { if (timerOn) { stopClock(); save1(); } } else if (!S.done && S.cells.some(function (v) { return v; })) startClock(); });
+  window.addEventListener('pagehide', function () { if (!S.done) { stopClock(); save1(); } });
+
+  /* ---------- how to play ---------- */
+  /* A small 4x4 board plays itself on a loop: four lanterns drop in one at a time and the light spreads. */
+  var DEMO = { n: 4, wall: 6, num: 2, lamps: [0, 7, 10, 13], starts: [8, 28, 48, 68] };
+  function demoCss() {
+    var n = DEMO.n, css = '', see = [];
+    var walls = []; for (var i = 0; i < 16; i++) walls[i] = i === DEMO.wall ? 1 : 0;
+    var sl = sightLines(n, walls), first = {};
+    DEMO.lamps.forEach(function (l, k) { sl[l].forEach(function (c) { var d = Math.abs(Math.floor(c / n) - Math.floor(l / n)) + Math.abs(c % n - l % n), t = DEMO.starts[k] + 3 + d * 1.6; if (first[c] === undefined || t < first[c]) first[c] = t; }); });
+    Object.keys(first).forEach(function (c) { var t = first[c]; css += '@keyframes ml' + c + '{0%,' + t.toFixed(1) + '%{opacity:0}' + (t + 3).toFixed(1) + '%,95%{opacity:1}99%,100%{opacity:0}}.demo .m' + c + '::before{animation:ml' + c + ' var(--loop) infinite}'; });
+    DEMO.lamps.forEach(function (l, k) { var s = DEMO.starts[k]; css += '@keyframes lp' + k + '{0%,' + s + '%{opacity:0;transform:translateY(-22px) scale(0.5)}' + (s + 3.5) + '%{opacity:1;transform:translateY(3px) scale(1.08)}' + (s + 5.5) + '%,95%{opacity:1;transform:none}99%,100%{opacity:0}}.demo .p' + l + ' .lan{animation:lp' + k + ' var(--loop) infinite}'; });
+    css += '@keyframes wok{0%,' + (DEMO.starts[2] + 3) + '%{color:#e9c46a}' + (DEMO.starts[2] + 6) + '%,95%{color:#8fd3aa;text-shadow:0 0 12px rgba(143,211,170,.6)}99%,100%{color:#e9c46a}}.demo .cell.wall .n{animation:wok var(--loop) infinite}';
+    var caps = [[0, 27, 'Place a lantern. It lights its row and column.'], [27, 47, 'Light stops at a wall.'], [47, 67, 'The wall says 2: two lanterns touch it.'], [67, 100, 'Every square lit, and no lantern sees another.']];
+    caps.forEach(function (c, k) { css += '@keyframes cp' + k + '{0%,' + Math.max(0, c[0] - 0.01) + '%{opacity:0;transform:translateY(6px)}' + (c[0] + 2) + '%,' + (c[1] - 2) + '%{opacity:1;transform:none}' + c[1] + '%,100%{opacity:0;transform:translateY(-6px)}}.caps span:nth-child(' + (k + 1) + '){animation:cp' + k + ' var(--loop) infinite}'; });
+    css += '.caps span:nth-child(1){animation-name:cp0}';
+    return css;
+  }
+  function howHtml() {
+    var h = '<h2 id="howT">How to play</h2><p class="lead">Light up every paper square with lanterns.</p><div class="demo"><div class="board">';
+    for (var i = 0; i < 16; i++) {
+      if (i === DEMO.wall) h += '<div class="cell wall"><span class="n">' + DEMO.num + '</span></div>';
+      else h += '<div class="cell m' + i + (DEMO.lamps.indexOf(i) >= 0 ? ' p' + i : '') + '">' + LAN + '</div>';
+    }
+    h += '</div><div class="caps"><span>Place a lantern. It lights its row and column.</span><span>Light stops at a wall.</span><span>The wall says 2: two lanterns touch it.</span><span>Every square lit, and no lantern sees another.</span></div></div>';
+    h += '<ol><li><span><b>Tap a square to place a lantern.</b> It lights its row and column until it hits a wall.</span></li><li><span><b>Light every square,</b> but never put a lantern where another lantern can see it. Those ones glow red.</span></li><li><span><b>A number on a wall</b> is how many lanterns touch it. Tap twice for a dot to mark "no lantern here".</span></li></ol>';
+    h += '<div class="foot3"><p>Daily: same board for everyone. Endless: new boards, three sizes.</p><button type="button" class="btn red" id="howGo">Got it</button></div>';
+    return h;
+  }
+  function openHow() {
+    var st = document.createElement('style'); st.id = 'demoCss'; st.textContent = demoCss(); document.head.appendChild(st);
+    $('how').innerHTML = howHtml(); $('ov').hidden = false; store.seen = true; save(); $('howGo').addEventListener('click', closeHow); $('howGo').focus({ preventScroll: true });
+  }
+  function closeHow() {
+    var ov = $('ov');
+    function fin() { ov.hidden = true; $('how').innerHTML = ''; var s = $('demoCss'); if (s) s.remove(); try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {} }
+    var a = anim(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    if (a) a.onfinish = function () { a.cancel(); fin(); }; else fin();
+  }
+  $('helpBtn').addEventListener('click', openHow);
+  $('ov').addEventListener('click', function (e) { if (e.target === $('ov')) closeHow(); });
+
+  /* ---------- clock ---------- */
+  function tick() {
+    var now = new Date(), k = dateKey(now);
+    if (k !== todayKey) { todayKey = k; dayNo = dayNumber(k); store.d = null; save(); if (S.mode === 'daily') init('daily'); return; }
+    if (timerOn) $('clock').textContent = fmtTime(elapsed());
+    var el = $('nextin'); if (!el) return;
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), s = Math.max(0, Math.floor((next - now) / 1000)), p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = 'Next board in ' + p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+  }
+  setInterval(tick, 500);
+
+  var h0 = location.hash.replace('#', '');
+  init(h0 === 'endless' ? 'endless' : 'daily');
+  if (!store.seen) setTimeout(function () { if (!store.seen) openHow(); }, 350);
+})();
+</script>

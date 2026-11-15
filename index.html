@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>The Daily Twelve</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Hanken+Grotesk:wght@400;500;700&family=Spectral:ital,wght@1,500;1,600&family=IM+Fell+English:ital@0;1&family=Caveat:wght@600;700&family=Lora:ital,wght@1,600&family=Marcellus&family=Special+Elite&family=Shippori+Mincho:wght@700;800&family=Zilla+Slab:wght@600;700&family=Fraunces:wght@600;700&family=Alfa+Slab+One&family=Oswald:wght@600;700&display=swap">
+<style>
+/* Layout: a cork noticeboard. The title is cut out of different papers, one per game, and stuck down
+   a little crooked. An index-card note sits beside it, then twelve puzzle cards are pinned to the cork, each
+   made from its own game's materials (sea chart, dictionary page, slate, linen, plaster, telegram form,
+   night sky, enamel sign, kraft map, paint chip, ladder wood, riveted iron). Every card is the same size,
+   three across, four rows.
+   Single look on purpose: the cork and the cards carry their own colours in light or dark. */
+:root {
+  --cork: #b78b5c; --cork-deep: #8d6540; --tape: #1d1d20; --tape-hi: #f3f1ea; --card-ink: #26211c;
+  --brass: #c9a24f; --paper: #f7f2e4; --shadow: rgba(40, 24, 8, 0.5);
+  --label: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --text: 'Hanken Grotesk', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --cork-tile: none; --grain-dark: none;
+}
+* { box-sizing: border-box; }
+html { background: var(--cork-deep); }
+body {
+  margin: 0; min-height: 100dvh; color: var(--card-ink); font: 400 17px/1.5 var(--text);
+  background-color: var(--cork);
+  background-image:
+    var(--cork-tile),
+    radial-gradient(80% 60% at 50% 0%, rgba(255, 236, 200, 0.35), transparent 70%),
+    radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(60, 30, 5, 0.45) 100%),
+    linear-gradient(#b98d5d, #a97d4f);
+  padding-block: 0 56px; position: relative;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, p, ul { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d1d20; }
+.wrap { max-width: 1240px; margin: 0 auto; }
+
+/* ---------- top ---------- */
+.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 40px; align-items: start; padding: 44px 0 36px; }
+.banner { display: grid; gap: 16px; justify-items: start; }
+.words { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 22px; font-size: clamp(2.1rem, 6.6vw, 4rem); filter: drop-shadow(0 5px 4px rgba(40, 20, 5, 0.5)); }
+.word { display: flex; gap: 4px; align-items: flex-end; }
+.word.sm { font-size: 0.6em; }
+.sc { display: grid; place-items: center; min-width: 1.02em; height: 1.26em; padding: 0 0.1em; line-height: 1; transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); transition: transform 0.5s var(--ease); clip-path: var(--clip); }
+.sc:hover { transform: translateY(-6px) rotate(0deg); }
+.sc:nth-child(3n+1) { --clip: polygon(2% 4%, 30% 0, 62% 3%, 98% 1%, 100% 38%, 97% 71%, 100% 99%, 64% 96%, 33% 100%, 1% 97%, 3% 62%, 0 30%); }
+.sc:nth-child(3n+2) { --clip: polygon(0 2%, 36% 4%, 70% 0, 100% 3%, 97% 33%, 100% 66%, 98% 100%, 60% 97%, 28% 100%, 3% 96%, 1% 60%, 3% 28%); }
+.sc:nth-child(3n) { --clip: polygon(3% 0, 40% 3%, 75% 1%, 100% 4%, 98% 40%, 100% 74%, 96% 98%, 66% 100%, 30% 96%, 0 99%, 2% 58%, 0 24%); }
+.sc.s-rail { background: var(--grain-dark), linear-gradient(150deg, #3b3f45, #1c1e22); color: #f1e4c0; font: 700 1em/1 'Zilla Slab', Georgia, serif; --r: -3deg; --y: 2px; text-shadow: 0 -1px 0 #000; }
+.sc.s-swatch { background: linear-gradient(#fbf8f1 74%, #e0553a 74% 84%, #fbf8f1 84%); color: #2a2622; font: 700 1em/1 'Fraunces', Georgia, serif; --r: 2.5deg; --y: -3px; }
+.sc.s-lantern { background: radial-gradient(circle at 50% 30%, #2c3170, #151a44 70%); color: #f2c866; font: 800 1em/1 'Shippori Mincho', Georgia, serif; --r: -2deg; --y: 3px; text-shadow: 0 0 10px rgba(246, 195, 91, 0.7); }
+.sc.s-lead { background: #d3e4e7 repeating-linear-gradient(0deg, rgba(21, 37, 46, 0.14) 0 1px, transparent 1px 10px), repeating-linear-gradient(90deg, rgba(21, 37, 46, 0.14) 0 1px, transparent 1px 10px); color: #15252e; font: italic 600 1em/1 'Spectral', Georgia, serif; --r: -2.5deg; --y: 0px; }
+.sc.s-plumb { background: #f2e9d6 radial-gradient(circle at 1px 1px, rgba(90, 60, 30, 0.2) 0.6px, transparent 1px) 0 0 / 7px 7px; color: #2a231e; font: italic 400 1em/1 'IM Fell English', Georgia, serif; --r: 3deg; --y: -4px; }
+.sc.s-tally { background: radial-gradient(70% 90% at 30% 20%, #3f544c, #2f3e38 70%); color: #ecd88a; font: 700 1.1em/1 'Caveat', cursive; --r: -1.5deg; --y: 4px; }
+.sc.s-sampler { background: #f2e9d6 repeating-linear-gradient(0deg, rgba(120, 92, 52, 0.12) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120, 92, 52, 0.12) 0 1px, transparent 1px 3px); box-shadow: inset 0 0 0 3px #3b5590; color: #b5443a; font: italic 600 1em/1 'Lora', Georgia, serif; --r: 2deg; --y: -2px; }
+.sc.s-tess { background: linear-gradient(160deg, #e6d9bb, #cdbb97); color: #7a3a22; font: 400 0.95em/1 'Marcellus', Georgia, serif; --r: -3deg; --y: 2px; }
+.sc.s-dispatch { background: linear-gradient(170deg, #efe2b4, #dcc98a); color: #2a2118; font: 400 0.95em/1 'Special Elite', 'Courier New', monospace; --r: 2.5deg; --y: -3px; }
+.sc.s-depart { background: linear-gradient(#1a5db3, #0c3f86); color: #fff; font: 700 1.05em/1 'Barlow Condensed', 'Arial Narrow', sans-serif; --r: -2deg; --y: 3px; }
+.sc.s-plain { background: #cfae78 repeating-linear-gradient(95deg, rgba(110, 76, 30, 0.14) 0 2px, transparent 2px 6px); color: #2b1d0f; font: 700 1.1em/1 'Caveat', cursive; --r: 3.5deg; --y: -2px; }
+.sc.s-rung { background: var(--grain-dark), repeating-linear-gradient(0deg, rgba(60, 30, 5, 0.16) 0 1px, transparent 1px 5px), linear-gradient(180deg, #c79a60, #a9783f); color: #fbf1d6; font: 400 0.92em/1 'Alfa Slab One', Georgia, serif; --r: 2deg; --y: -3px; text-shadow: 0 -1px 0 rgba(40, 20, 0, 0.7); }
+.sc.s-conduit { background: radial-gradient(circle at 6px 6px, #8a939a 0 1.4px, transparent 2px), linear-gradient(160deg, #4b545b, #2c3338); color: #e2935f; font: 700 1em/1 'Oswald', 'Arial Narrow', sans-serif; --r: -2.5deg; --y: 3px; text-shadow: 0 0 6px rgba(85, 207, 236, 0.55); }
+.scrapnote { position: relative; display: inline-block; padding: 9px 22px 8px; background: rgba(236, 224, 184, 0.92); color: #3a2c18; font: 700 1.2rem/1 'Caveat', cursive; letter-spacing: 0.02em; transform: rotate(-0.8deg); box-shadow: 0 3px 4px -1px rgba(40, 20, 5, 0.45); clip-path: polygon(0 12%, 3% 0, 97% 4%, 100% 0, 99% 88%, 100% 100%, 4% 96%, 0 100%); }
+.note {
+  position: relative; width: 330px; max-width: 100%; padding: 22px 20px 18px; background: var(--paper); color: #3a322a; transform: rotate(1.6deg);
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(70, 110, 160, 0.22) 27px 28px), linear-gradient(90deg, transparent 38px, rgba(190, 60, 50, 0.35) 38px 39px, transparent 39px);
+  box-shadow: 0 10px 16px -6px var(--shadow), 0 1px 0 #fff inset;
+}
+.note p { font: 500 1rem/28px var(--text); padding-left: 30px; }
+.note .when { font: 700 0.76rem/28px var(--label); letter-spacing: 0.12em; text-transform: uppercase; color: #8a5a3a; }
+.pegs { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 30px; margin-top: 4px; align-items: center; }
+.pegs i { width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 50% 60%, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.18)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8); transition: background 0.6s, box-shadow 0.6s; }
+.pegs i.on { background: radial-gradient(circle at 35% 30%, #ffeaa0, var(--brass) 50%, #85621b); box-shadow: 0 1px 2px rgba(60, 40, 10, 0.6); }
+.pegs span { margin-left: 6px; font: 700 0.78rem/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: #8a5a3a; }
+.note::before, .card::before { content: ""; position: absolute; left: 50%; top: -9px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; z-index: 3; background: radial-gradient(circle at 35% 30%, #fff 0 8%, var(--pin, #c8402e) 9% 60%, rgba(0, 0, 0, 0.45)); box-shadow: 0 4px 5px rgba(40, 20, 5, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2); }
+.note::before { --pin: #2f6fa8; }
+.pick { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin: 0 0 30px; }
+.tagbtn {
+  position: relative; border: 0; cursor: pointer; padding: 14px 30px 12px 46px; background: var(--paper); color: #3a322a; font: 700 1.1rem/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase;
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%); box-shadow: none; filter: drop-shadow(0 5px 5px var(--shadow)); transition: transform 0.4s var(--ease);
+}
+.tagbtn::before { content: ""; position: absolute; left: 20px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--cork-deep); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7); }
+.tagbtn:hover { transform: translateX(4px) rotate(-1deg); }
+.pick .msg { font: 600 1.05rem/1.3 var(--text); color: #2b1d0f; text-shadow: 0 1px 0 rgba(255, 235, 200, 0.5); min-height: 1.4em; }
+
+/* ---------- cards ---------- */
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 34px; align-items: stretch; }
+.card { position: relative; display: flex; flex-direction: column; border-radius: 4px; transform: rotate(var(--tilt, 0deg)); transition: transform 0.55s var(--ease), box-shadow 0.55s var(--ease); box-shadow: 0 14px 18px -8px var(--shadow), 0 2px 3px rgba(40, 20, 5, 0.4); }
+.card:hover, .card:focus-visible { transform: rotate(0deg) translateY(-8px) scale(1.012); box-shadow: 0 26px 30px -10px var(--shadow), 0 3px 4px rgba(40, 20, 5, 0.4); }
+.card.picked { animation: glow 1.2s ease-in-out infinite alternate; }
+@keyframes glow { to { box-shadow: 0 0 0 5px #fff, 0 0 0 9px rgba(255, 255, 255, 0.35), 0 26px 30px -10px var(--shadow); transform: rotate(0deg) translateY(-8px); } }
+.card.lit { transform: rotate(0deg) translateY(-8px) scale(1.012); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.85), 0 26px 30px -10px var(--shadow); }
+.media { position: relative; height: 168px; overflow: hidden; border-radius: 4px 4px 0 0; }
+.media svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.body { position: relative; display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 18px 20px 18px; }
+.card h2 { font-size: 2rem; line-height: 1; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 700 0.78rem/1 var(--label); letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.85; }
+.card p.what { font-size: 1.02rem; line-height: 1.45; }
+.foot { margin-top: auto; padding-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.status { display: inline-flex; align-items: center; gap: 7px; font: 700 0.8rem/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
+.status svg { width: 14px; height: 14px; display: none; }
+.status.done { opacity: 1; } .status.done svg { display: block; }
+.go { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px 9px; border-radius: 3px; font: 700 0.95rem/1 var(--label); letter-spacing: 0.18em; text-transform: uppercase; transition: transform 0.4s var(--ease), gap 0.4s var(--ease); }
+.go svg { width: 16px; height: 12px; transition: transform 0.4s var(--ease); }
+.card:hover .go svg { transform: translateX(5px); }
+
+/* Leadline: sea chart */
+.c-lead { --pin: #b1215c; --tilt: -1.1deg; background: #e7eeed; color: #15252e; }
+.c-lead .media { background: #d3e4e7; background-image: repeating-linear-gradient(0deg, rgba(21, 37, 46, 0.1) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(21, 37, 46, 0.1) 0 1px, transparent 1px 24px); box-shadow: inset 0 -1px 0 rgba(21, 37, 46, 0.25); }
+.c-lead h2 { font: italic 600 2.1rem/1 'Spectral', Georgia, serif; }
+.c-lead .go { background: #b1215c; color: #fff; }
+.c-lead .ring { transform-box: fill-box; transform-origin: center; }
+.c-lead:hover .ring { animation: ping 1.8s ease-out infinite; } .c-lead:hover .ring.r2 { animation-delay: 0.3s; } .c-lead:hover .ring.r3 { animation-delay: 0.6s; }
+@keyframes ping { 0% { transform: scale(0.55); opacity: 0.2; } 60% { opacity: 1; } 100% { transform: scale(1.05); opacity: 0.35; } }
+/* Plumb: dictionary page */
+.c-plumb { --pin: #93383a; --tilt: 0.9deg; background: #f2e9d6; color: #2a231e; }
+.c-plumb .media { background: #e8dcc3; background-image: radial-gradient(circle at 1px 1px, rgba(90, 60, 30, 0.14) 0.6px, transparent 1px); background-size: 8px 8px; box-shadow: inset 0 -1px 0 rgba(42, 35, 30, 0.2); }
+.c-plumb h2 { font: 400 2.2rem/1 'IM Fell English', Georgia, serif; font-style: italic; }
+.c-plumb .go { background: #93383a; color: #fbf4e4; }
+.c-plumb .swing { transform-origin: 232px 0; animation: sway 4.2s ease-in-out infinite alternate; }
+.c-plumb:hover .swing { animation-duration: 1.6s; }
+@keyframes sway { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+/* Tally: slate */
+.c-tally { --pin: #e0b13a; --tilt: -0.7deg; background: #2f3e38; color: #f0eee4; box-shadow: 0 0 0 7px #a37d52, 0 0 0 8px rgba(0, 0, 0, 0.35), 0 14px 18px -4px var(--shadow); }
+.c-tally:hover { box-shadow: 0 0 0 7px #a37d52, 0 0 0 8px rgba(0, 0, 0, 0.35), 0 26px 30px -6px var(--shadow); }
+.c-tally .media { background: radial-gradient(70% 90% at 30% 20%, #3a4d46, #2f3e38 70%); }
+.c-tally h2 { font: 700 2.5rem/0.9 'Caveat', cursive; color: #ecd88a; }
+.c-tally .go { background: #dbb982; color: #3a2a14; }
+.c-tally .tok { transform-box: fill-box; transform-origin: center; }
+.c-tally:hover .tok { animation: hop 0.9s var(--ease) both; } .c-tally:hover .tok:nth-of-type(2) { animation-delay: 0.08s; } .c-tally:hover .tok:nth-of-type(3) { animation-delay: 0.16s; } .c-tally:hover .tok:nth-of-type(4) { animation-delay: 0.24s; }
+@keyframes hop { 40% { transform: translateY(-10px) rotate(-6deg); } }
+/* Sampler: linen */
+.c-sampler { --pin: #36508c; --tilt: 1.2deg; background-color: #f2e9d6; background-image: repeating-linear-gradient(0deg, rgba(120, 92, 52, 0.09) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120, 92, 52, 0.09) 0 1px, transparent 1px 3px); color: #3a2f27; box-shadow: 0 0 0 5px #3b5590, 0 14px 18px -4px var(--shadow); }
+.c-sampler:hover { box-shadow: 0 0 0 5px #3b5590, 0 26px 30px -6px var(--shadow); }
+.c-sampler .media { background: #e7dcc5; background-image: repeating-linear-gradient(0deg, rgba(120, 92, 52, 0.12) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120, 92, 52, 0.12) 0 1px, transparent 1px 3px); border-radius: 0; }
+.c-sampler::after { content: ""; position: absolute; inset: 5px; border: 1.5px dashed rgba(181, 68, 58, 0.7); border-radius: 2px; pointer-events: none; }
+.c-sampler h2 { font: italic 600 2.2rem/1 'Lora', Georgia, serif; color: #b5443a; }
+.c-sampler .go { background: #36508c; color: #fbf4e4; }
+.c-sampler .kn { transform-box: fill-box; transform-origin: center; }
+.c-sampler:hover .kn { animation: pop 0.7s var(--ease) both; } .c-sampler:hover .kn:nth-of-type(2) { animation-delay: 0.12s; } .c-sampler:hover .kn:nth-of-type(3) { animation-delay: 0.24s; }
+@keyframes pop { 0% { transform: scale(0); } 60% { transform: scale(1.4); } 100% { transform: scale(1); } }
+/* Tessera: plaster */
+.c-tess { --pin: #2f7d7a; --tilt: -0.8deg; background: #dccdad; color: #3e3226; box-shadow: 0 0 0 3px #8e6a44, 0 0 0 5px #3b2a1d, 0 14px 18px -4px var(--shadow); }
+.c-tess:hover { box-shadow: 0 0 0 3px #8e6a44, 0 0 0 5px #3b2a1d, 0 26px 30px -6px var(--shadow); }
+.c-tess .media { background: linear-gradient(160deg, #e6d9bb, #dccdad 50%, #cdbb97); box-shadow: inset 0 -1px 0 rgba(62, 50, 38, 0.25); }
+.c-tess h2 { font: 400 2rem/1 'Marcellus', Georgia, serif; letter-spacing: 0.14em; text-transform: uppercase; color: #7a3a22; }
+.c-tess .go { background: #b0502f; color: #fff2e0; }
+.c-tess .tl { transform-box: fill-box; transform-origin: center; }
+.c-tess:hover .tl { animation: lay 1.2s var(--ease) both; animation-delay: calc(var(--d) * 70ms); }
+@keyframes lay { 0% { transform: scale(1); } 35% { transform: scale(1.18) rotate(4deg); } 100% { transform: scale(1); } }
+
+/* Dispatch: telegram form */
+.c-dispatch { --pin: #b3342a; --tilt: 1deg; background: #e8d9a6; color: #2a2118; box-shadow: 0 0 0 4px #3b2417, 0 14px 18px -4px var(--shadow); }
+.c-dispatch:hover { box-shadow: 0 0 0 4px #3b2417, 0 26px 30px -6px var(--shadow); }
+.c-dispatch .media { background: linear-gradient(170deg, #efe2b4, #e0cf93); box-shadow: inset 0 -1px 0 rgba(42, 33, 24, 0.3); border-radius: 0; }
+.c-dispatch h2 { font: 400 2rem/1 'Special Elite', 'Courier New', monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.c-dispatch .go { background: #b3342a; color: #fbeed0; }
+.c-dispatch .stamp { transform-box: fill-box; transform-origin: center; }
+.c-dispatch:hover .stamp { animation: thump 0.7s var(--ease) both; }
+@keyframes thump { 0% { transform: scale(2.2); opacity: 0; } 60% { transform: scale(0.94); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
+/* Lanterns: night sky */
+.c-lantern { --pin: #e8b64a; --tilt: -0.9deg; background: #14193f; color: #f1e6cc; }
+.c-lantern .media { background: radial-gradient(90% 80% at 50% 110%, rgba(214, 100, 70, 0.55), transparent 70%), linear-gradient(#0c102b, #1b1f4a); }
+.c-lantern h2 { font: 800 2.1rem/1 'Shippori Mincho', Georgia, serif; letter-spacing: 0.08em; color: #f2c866; }
+.c-lantern .go { background: linear-gradient(#ffe39a, #f6c35b); color: #2a1708; }
+.c-lantern .hl { transform-box: fill-box; transform-origin: 50% 0; animation: swayL 4s ease-in-out infinite alternate; }
+.c-lantern .hl:nth-of-type(2) { animation-delay: -1.3s; } .c-lantern .hl:nth-of-type(3) { animation-delay: -2.4s; } .c-lantern .hl:nth-of-type(4) { animation-delay: -0.6s; }
+.c-lantern:hover .hl { animation-duration: 1.6s; }
+@keyframes swayL { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+/* Departures: enamel sign */
+.c-depart { --pin: #0f4c9a; --tilt: 0.8deg; background: #f4f1e6; color: #1d2128; box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0f4c9a, 0 14px 18px -4px var(--shadow); }
+.c-depart:hover { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0f4c9a, 0 26px 30px -6px var(--shadow); }
+.c-depart .media { background: linear-gradient(160deg, #26272d, #0e0f13); }
+.c-depart h2 { font: 700 2.2rem/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: #0f4c9a; }
+.c-depart .go { background: #ffb81c; color: #1a1405; }
+.c-depart .fl2 { transform-box: fill-box; transform-origin: 50% 50%; }
+.c-depart:hover .fl2 { animation: flip 0.8s var(--ease) both; animation-delay: calc(var(--d) * 120ms); }
+@keyframes flip { 0% { transform: scaleY(1); } 40% { transform: scaleY(0.05); } 100% { transform: scaleY(1); } }
+/* Rail: kraft map */
+.c-rail { --pin: #2f74d6; --tilt: -1deg; background: #d8c49b; color: #2b2418; box-shadow: 0 0 0 4px #25282c, 0 14px 18px -4px var(--shadow); }
+.c-rail:hover { box-shadow: 0 0 0 4px #25282c, 0 26px 30px -6px var(--shadow); }
+.c-rail .media { background: linear-gradient(160deg, #e2d0a8, #cdb88c); box-shadow: inset 0 -1px 0 rgba(43, 36, 24, 0.3); }
+.c-rail h2 { font: 700 2.2rem/1 'Zilla Slab', Georgia, serif; letter-spacing: 0.16em; text-transform: uppercase; }
+.c-rail .go { background: #25282c; color: #f1e4c0; }
+.c-rail .tr { stroke-dasharray: 100; stroke-dashoffset: 0; }
+.c-rail:hover .tr { animation: lay2 1.1s var(--ease) both; animation-delay: calc(var(--d) * 150ms); }
+@keyframes lay2 { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+/* Rungs: ladder wood */
+.c-rung { --pin: #2f7d5a; --tilt: -0.9deg; background: #efe3c8; color: #2b2118; box-shadow: 0 0 0 4px #b2834b, 0 0 0 5px rgba(0, 0, 0, 0.35), 0 14px 18px -4px var(--shadow); }
+.c-rung:hover { box-shadow: 0 0 0 4px #b2834b, 0 0 0 5px rgba(0, 0, 0, 0.35), 0 26px 30px -6px var(--shadow); }
+.c-rung .media { background: #a9bdb2 repeating-linear-gradient(90deg, rgba(20, 40, 30, 0.2) 0 2px, rgba(255, 255, 255, 0.12) 2px 3px, transparent 3px 46px); box-shadow: inset 0 -1px 0 rgba(43, 33, 24, 0.3); }
+.c-rung h2 { font: 400 2rem/1 'Alfa Slab One', Georgia, serif; letter-spacing: 0.01em; color: #8a5a2a; }
+.c-rung .go { background: #2b2118; color: #f6efdc; }
+.c-rung .rt { transform-box: fill-box; transform-origin: center; }
+.c-rung:hover .rt { animation: hop 0.9s var(--ease) both; animation-delay: calc(var(--d) * 55ms); }
+/* Conduit: riveted iron */
+.c-conduit { --pin: #55cfec; --tilt: 1deg; background: #2f363b; color: #e8edef; box-shadow: 0 0 0 4px #dcb35a, 0 0 0 5px rgba(0, 0, 0, 0.4), 0 14px 18px -4px var(--shadow); }
+.c-conduit:hover { box-shadow: 0 0 0 4px #dcb35a, 0 0 0 5px rgba(0, 0, 0, 0.4), 0 26px 30px -6px var(--shadow); }
+.c-conduit .media { background: #262c30; box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5); }
+.c-conduit h2 { font: 700 2rem/1 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: #e8b36e; }
+.c-conduit .go { background: linear-gradient(#f1d58e, #dcb35a); color: #2a1e06; }
+.c-conduit .cw { stroke-dasharray: 100; stroke-dashoffset: 0; }
+.c-conduit:hover .cw { animation: lay2 1.4s var(--ease) both; }
+.c-conduit .cv { transform-box: fill-box; transform-origin: center; }
+.c-conduit:hover .cv { animation: spinv 1.4s var(--ease) both; }
+@keyframes spinv { to { transform: rotate(360deg); } }
+/* Swatch: paint chip */
+.c-swatch { --pin: #e0553a; --tilt: 1.1deg; background: #fbf8f1; color: #2a2622; }
+.c-swatch .media { background: #fbf8f1; }
+.c-swatch h2 { font: 700 2.2rem/1 'Fraunces', Georgia, serif; }
+.c-swatch .go { background: #2a2622; color: #fbf8f1; }
+.c-swatch .chip { transform-box: fill-box; transform-origin: center; }
+.c-swatch:hover .chip { animation: wob 0.9s var(--ease) both; animation-delay: calc(var(--d) * 40ms); }
+@keyframes wob { 40% { transform: translateY(-5px) rotate(-5deg); } }
+
+.corner { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: 12px; font: 600 0.72rem/1 var(--label); letter-spacing: 0.14em; color: rgba(50, 28, 8, 0.7); text-shadow: 0 1px 0 rgba(255, 235, 200, 0.4); transition: color 0.3s; }
+.corner:hover { color: #2b1405; text-decoration: underline; }
+.credit { margin-top: 44px; text-align: center; font: 600 0.8rem/1.4 var(--label); letter-spacing: 0.2em; text-transform: uppercase; color: rgba(50, 28, 8, 0.75); text-shadow: 0 1px 0 rgba(255, 235, 200, 0.45); }
+
+@media (max-width: 1020px) {
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 26px; }
+}
+@media (max-width: 1100px) {
+  .top { grid-template-columns: minmax(0, 1fr); padding-top: 34px; }
+  .note { width: 330px; max-width: 100%; }
+}
+@media (max-width: 620px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .card { --tilt: 0deg; }
+  .words { gap: 8px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="hlg" x1="0" x2="1"><stop offset="0" stop-color="#8e1f12"/><stop offset="0.35" stop-color="#ee5b3e"/><stop offset="0.6" stop-color="#d8432f"/><stop offset="1" stop-color="#7d1a10"/></linearGradient><symbol id="hlS" viewBox="0 0 40 58"><path d="M20 0v6" stroke="#2a1a10" stroke-width="1.6"/><rect x="11" y="5" width="18" height="6" rx="1.5" fill="#2a1d14"/><path d="M11 11C-1 16-1 40 11 46h18c12-6 12-30 0-35z" fill="url(#hlg)"/><path d="M12 11c-6 8-6 28 0 35M20 10.5v36M28 11c6 8 6 28 0 35" fill="none" stroke="#5b0f08" stroke-width="1" opacity="0.6"/><rect x="11" y="45" width="18" height="5" rx="1.5" fill="#2a1d14"/><path d="M17 50v6M20 50v8M23 50v6" stroke="#e9c46a" stroke-width="1.4" stroke-linecap="round"/></symbol></defs></svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="banner">
+      <h1 class="words" aria-label="The Daily Twelve">
+        <span class="word sm" aria-hidden="true"><span class="sc s-rail">T</span><span class="sc s-swatch">H</span><span class="sc s-lantern">E</span></span>
+        <span class="word" aria-hidden="true"><span class="sc s-lead">D</span><span class="sc s-plumb">A</span><span class="sc s-tally">I</span><span class="sc s-sampler">L</span><span class="sc s-tess">Y</span></span>
+        <span class="word" aria-hidden="true"><span class="sc s-dispatch">T</span><span class="sc s-depart">W</span><span class="sc s-rung">E</span><span class="sc s-conduit">L</span><span class="sc s-plain">V</span><span class="sc s-sampler">E</span></span>
+      </h1>
+      <p class="scrapnote" id="tapeSub">twelve small puzzles, a new one every day</p>
+    </div>
+    <aside class="note" aria-label="Today">
+      <p class="when" id="when">Today</p>
+      <p>Twelve small puzzles. Each has a new board every day, plus an endless mode for when one isn't enough.</p>
+      <div class="pegs" id="pegs" role="img" aria-label="Daily puzzles finished today"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><span id="pegTxt">0 of 12 today</span></div>
+    </aside>
+  </header>
+
+  <div class="pick"><button type="button" class="tagbtn" id="pickBtn">Pick one for me</button><p class="msg" id="pickMsg" aria-live="polite"></p></div>
+
+  <main class="board" id="board">
+
+    <a class="card c-lead" href="leadline.html" data-id="leadline" aria-label="Leadline, a map puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <path d="M0 120 C30 108 52 128 80 118 C104 110 112 140 140 150 L140 168 L0 168Z" fill="#c9bf9f" stroke="#15252e" stroke-opacity="0.45"/>
+          <g fill="none" stroke="#b1215c" stroke-width="1.6">
+            <circle class="ring r1" cx="196" cy="78" r="18"/><circle class="ring r2" cx="196" cy="78" r="38" stroke-dasharray="5 4"/><circle class="ring r3" cx="196" cy="78" r="60" stroke-dasharray="2 5"/>
+          </g>
+          <path d="M60 40 L196 78" stroke="#15252e" stroke-opacity="0.5" stroke-dasharray="3 4" fill="none"/>
+          <circle cx="60" cy="40" r="4.5" fill="#15252e"/><text x="68" y="36" font-family="Spectral, Georgia, serif" font-style="italic" font-size="13" fill="#15252e">14</text>
+          <circle cx="246" cy="128" r="4.5" fill="#15252e"/><text x="254" y="124" font-family="Spectral, Georgia, serif" font-style="italic" font-size="13" fill="#15252e">9</text>
+          <path d="M188 70 L204 86 M204 70 L188 86" stroke="#b1215c" stroke-width="3" stroke-linecap="round"/>
+          <g transform="translate(262 34)" fill="none" stroke="#15252e" stroke-opacity="0.55"><circle r="14"/><path d="M0 -20 L4 0 L0 20 L-4 0Z" fill="#15252e" fill-opacity="0.5"/><path d="M-20 0 L0 -4 L20 0 L0 4Z"/></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Leadline</h2>
+        <p class="meta"><span>Map</span><span>Deduction</span><span>About 3 min</span></p>
+        <p class="what">Cast a lead line, read the depth rings, and find a hidden wreck on the sea chart in six casts.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-plumb" href="plumb.html" data-id="plumb" aria-label="Plumb, a word puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <g font-family="'IM Fell English', Georgia, serif" fill="#2a231e">
+            <text x="22" y="34" font-size="13" font-style="italic" fill="#93383a">after</text><text x="22" y="54" font-size="19">pl<tspan fill-opacity="0.35">_ _ _</tspan></text>
+          </g>
+          <g transform="translate(22 78)">
+            <rect x="0" y="0" width="30" height="34" rx="3" fill="#f2e9d6" stroke="#2a231e" stroke-opacity="0.5"/><rect x="36" y="0" width="30" height="34" rx="3" fill="#f2e9d6" stroke="#2a231e" stroke-opacity="0.5"/><rect x="72" y="0" width="30" height="34" rx="3" fill="#f2e9d6" stroke="#2a231e" stroke-opacity="0.5" stroke-dasharray="3 3"/><rect x="108" y="0" width="30" height="34" rx="3" fill="#f2e9d6" stroke="#2a231e" stroke-opacity="0.5" stroke-dasharray="3 3"/><rect x="144" y="0" width="30" height="34" rx="3" fill="#f2e9d6" stroke="#2a231e" stroke-opacity="0.5" stroke-dasharray="3 3"/>
+            <text x="15" y="25" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="22" fill="#2a231e">P</text><text x="51" y="25" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="22" fill="#2a231e">L</text>
+          </g>
+          <text x="22" y="140" font-family="'IM Fell English', Georgia, serif" font-style="italic" font-size="13" fill="#93383a">before</text>
+          <g transform="translate(0 0)"><g class="swing"><line x1="232" y1="0" x2="232" y2="92" stroke="#6a5a48" stroke-width="1.2"/><path d="M232 92 L222 108 Q232 134 242 108Z" fill="#b9934b" stroke="#6b5220" stroke-width="1"/><path d="M229 104 Q230 114 233 120" stroke="#fff" stroke-opacity="0.55" stroke-width="1.6" fill="none" stroke-linecap="round"/></g></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Plumb</h2>
+        <p class="meta"><span>Word</span><span>Five letters</span><span>About 3 min</span></p>
+        <p class="what">Guess the secret five-letter word. A swinging plumb bob and before-and-after clues narrow the page.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-tally" href="tally.html" data-id="tally" aria-label="Tally, a numbers puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <text x="150" y="70" text-anchor="middle" font-family="Caveat, cursive" font-weight="700" font-size="62" fill="#ecd88a">347</text>
+          <path d="M96 80 Q150 90 204 78" stroke="#ecd88a" stroke-opacity="0.7" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <g font-family="'Zilla Slab', Georgia, serif" font-weight="700" font-size="22" fill="#3a2a14" text-anchor="middle">
+            <g class="tok"><rect x="30" y="106" width="46" height="40" rx="9" fill="#dbb982" stroke="#8a6a38" stroke-width="1.4"/><text x="53" y="134">25</text></g>
+            <g class="tok"><rect x="84" y="112" width="46" height="40" rx="9" fill="#d3ad74" stroke="#8a6a38" stroke-width="1.4" transform="rotate(-4 107 132)"/><text x="107" y="140">7</text></g>
+            <g class="tok"><rect x="138" y="106" width="46" height="40" rx="9" fill="#dfc08c" stroke="#8a6a38" stroke-width="1.4" transform="rotate(3 161 126)"/><text x="161" y="134">50</text></g>
+            <g class="tok"><rect x="192" y="110" width="46" height="40" rx="9" fill="#d6b27a" stroke="#8a6a38" stroke-width="1.4"/><text x="215" y="138">3</text></g>
+          </g>
+          <g stroke="#f0eee4" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round" fill="none"><path d="M258 112 V138 M266 112 V138 M274 112 V138 M282 112 V138 M254 128 L288 122"/></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Tally</h2>
+        <p class="meta"><span>Numbers</span><span>Six tokens</span><span>About 5 min</span></p>
+        <p class="what">Combine six wooden tokens on a chalkboard to hit the target number in as few steps as you can.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-sampler" href="sampler.html" data-id="sampler" aria-label="Sampler, a colour logic puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <g stroke-linecap="round" fill="none" stroke-width="3" stroke="#fff" stroke-opacity="0.9">
+            <rect x="38" y="40" width="46" height="46" rx="7" fill="#b5443a" stroke="none"/><path d="M49 51 L73 75 M73 51 L49 75"/>
+            <rect x="92" y="40" width="46" height="46" rx="7" fill="#36508c" stroke="none"/><path d="M115 50 V76 M102 63 H128"/>
+            <rect x="146" y="40" width="46" height="46" rx="7" fill="#dca62c" stroke="none"/><circle cx="169" cy="63" r="5" fill="#fff" stroke="none"/>
+            <rect x="200" y="40" width="46" height="46" rx="7" fill="#5c8a4a" stroke="none"/><path d="M223 49 L235 63 L223 77 L211 63Z"/>
+          </g>
+          <g>
+            <circle class="kn" cx="268" cy="52" r="7" fill="#d9b24c" stroke="#8f6c18"/><circle class="kn" cx="268" cy="74" r="7" fill="none" stroke="#fbf4e4" stroke-width="3"/><circle class="kn" cx="268" cy="96" r="7" fill="none" stroke="#fbf4e4" stroke-width="3"/>
+          </g>
+          <g stroke-width="2.2" stroke-linecap="round" fill="none"><g stroke="#b5443a"><path d="M40 122 l7 7 M47 122 l-7 7 M64 122 l7 7 M71 122 l-7 7 M88 122 l7 7 M95 122 l-7 7 M112 122 l7 7 M119 122 l-7 7"/></g><g stroke="#36508c"><path d="M136 122 l7 7 M143 122 l-7 7 M160 122 l7 7 M167 122 l-7 7 M184 122 l7 7 M191 122 l-7 7 M208 122 l7 7 M215 122 l-7 7"/></g></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Sampler</h2>
+        <p class="meta"><span>Colour logic</span><span>Nine guesses</span><span>About 4 min</span></p>
+        <p class="what">Stitch four-colour guesses onto linen and read the gold dots and rings to crack the hidden row.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-tess" href="tessera.html" data-id="tessera" aria-label="Tessera, a picture puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="70 4 200 180" preserveAspectRatio="xMidYMid meet">
+          <g font-family="Marcellus, Georgia, serif" font-size="13" fill="#4c3e2d" text-anchor="middle"><text x="118" y="20">2</text><text x="148" y="20">1 1</text><text x="178" y="20">3</text><text x="208" y="20">1 1</text><text x="238" y="20">2</text></g>
+          <g font-family="Marcellus, Georgia, serif" font-size="13" fill="#4c3e2d" text-anchor="end"><text x="98" y="44">1 1</text><text x="98" y="74">3</text><text x="98" y="104">5</text><text x="98" y="134">1 1</text><text x="98" y="164">3</text></g>
+          <g id="tg"></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Tessera</h2>
+        <p class="meta"><span>Picture logic</span><span>Number clues</span><span>About 5 min</span></p>
+        <p class="what">Number clues carved in limestone tell you where each tile goes, until the picture takes its colours.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+    <a class="card c-dispatch" href="dispatch.html" data-id="dispatch" aria-label="Dispatch, a code puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <rect x="24" y="16" width="252" height="26" fill="#2a2118"/><text x="150" y="35" text-anchor="middle" font-family="'Special Elite', 'Courier New', monospace" font-size="17" letter-spacing="7" fill="#efe2b4">TELEGRAM</text>
+          <g font-family="'Special Elite', 'Courier New', monospace" font-size="23" fill="#2a2118">
+            <text x="30" y="72" letter-spacing="6">KHOOR</text><text x="158" y="72" letter-spacing="6">ZRUOG</text>
+          </g>
+          <g stroke="#2a2118" stroke-opacity="0.55" stroke-width="1.4"><path d="M28 100 H134 M156 100 H262"/></g>
+          <g font-family="'Reenie Beanie', 'Segoe Print', cursive" font-size="26" fill="#3d4258"><text x="32" y="98" letter-spacing="9">HELLO</text></g>
+          <rect x="30" y="52" width="26" height="24" fill="#f3dd6e" opacity="0.6"/>
+          <g transform="rotate(-12 218 126)"><g class="stamp"><rect x="166" y="110" width="104" height="34" rx="4" fill="none" stroke="#b3342a" stroke-width="4"/><text x="218" y="135" text-anchor="middle" font-family="'Special Elite', 'Courier New', monospace" font-size="20" letter-spacing="2" fill="#b3342a">RECEIVED</text></g></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Dispatch</h2>
+        <p class="meta"><span>Word</span><span>Code</span><span>About 5 min</span></p>
+        <p class="what">Crack a telegram sent in a secret alphabet. Tap a letter, type your guess, and read the saying.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-lantern" href="lanterns.html" data-id="lanterns" aria-label="Lanterns, a light puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <g fill="#fff6dc"><circle cx="22" cy="26" r="1.6"/><circle cx="64" cy="14" r="1.2"/><circle cx="118" cy="30" r="1.5"/><circle cx="186" cy="12" r="1.2"/><circle cx="246" cy="30" r="1.6"/><circle cx="282" cy="12" r="1.2"/></g>
+          <path d="M-4 30 Q150 70 304 30" fill="none" stroke="rgba(255,220,160,0.5)" stroke-width="2"/>
+          <g class="hl" style="transform-origin:60px 40px"><use href="#hlS" x="40" y="38" width="40" height="58"/></g>
+          <g class="hl" style="transform-origin:130px 52px"><use href="#hlS" x="108" y="50" width="44" height="64"/></g>
+          <g class="hl" style="transform-origin:206px 48px"><use href="#hlS" x="184" y="46" width="44" height="64"/></g>
+          <g class="hl" style="transform-origin:262px 36px"><use href="#hlS" x="246" y="34" width="34" height="50"/></g>
+          <path d="M0 168V140l50-26 36 22 54-34 56 38 40-24 64 30V168Z" fill="#090b1f"/>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Lanterns</h2>
+        <p class="meta"><span>Logic</span><span>Light</span><span>About 5 min</span></p>
+        <p class="what">Place paper lanterns so every square glows, and no two lanterns can see each other.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-depart" href="departures.html" data-id="departures" aria-label="Departures, a train timetable puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <g font-family="'Barlow Condensed', 'Arial Narrow', sans-serif" font-weight="600" fill="#f4f1e6">
+            <text x="24" y="24" font-size="13" letter-spacing="3" fill="#ffb81c">DEPARTURES</text>
+            <g><rect x="22" y="34" width="158" height="30" rx="4" fill="#15161b"/><text x="34" y="56" font-size="20" letter-spacing="3">LISBON</text><g class="fl2" style="--d:0"><rect x="190" y="34" width="30" height="30" rx="4" fill="#15161b"/><text x="205" y="57" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="20">4</text></g><g class="fl2" style="--d:1"><rect x="226" y="34" width="56" height="30" rx="4" fill="#15161b"/><text x="254" y="57" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="19">09:15</text></g></g>
+            <g><rect x="22" y="72" width="158" height="30" rx="4" fill="#15161b"/><text x="34" y="94" font-size="20" letter-spacing="3">VIENNA</text><g class="fl2" style="--d:2"><rect x="190" y="72" width="30" height="30" rx="4" fill="#15161b"/><text x="205" y="95" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="20">2</text></g><g class="fl2" style="--d:3"><rect x="226" y="72" width="56" height="30" rx="4" fill="#15161b"/><text x="254" y="95" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="19">09:30</text></g></g>
+            <g><rect x="22" y="110" width="158" height="30" rx="4" fill="#15161b"/><text x="34" y="132" font-size="20" letter-spacing="3">OSLO</text><g class="fl2" style="--d:4"><rect x="190" y="110" width="30" height="30" rx="4" fill="#15161b"/><text x="205" y="133" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="20" fill="#4a4e57">–</text></g><g class="fl2" style="--d:5"><rect x="226" y="110" width="56" height="30" rx="4" fill="#15161b"/><text x="254" y="133" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="19" fill="#4a4e57">––:––</text></g></g>
+          </g>
+          <g stroke="#000" stroke-width="1.5"><path d="M22 49H180M190 49H220M226 49H282M22 87H180M190 87H220M226 87H282M22 125H180M190 125H220M226 125H282"/></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Departures</h2>
+        <p class="meta"><span>Logic</span><span>Clues</span><span>About 6 min</span></p>
+        <p class="what">Read the station notices and flip the split-flap board until every train has its platform and time.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-rail" href="rail.html" data-id="rail" aria-label="Rail, a track-laying puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet">
+          <g fill="#4a4540"><g id="rg"></g></g>
+        </svg>
+      </div>
+      <div class="body">
+        <h2>Rail</h2>
+        <p class="meta"><span>Path</span><span>Drag</span><span>About 4 min</span></p>
+        <p class="what">Drag track between matching stations. Tracks cannot cross, and every square has to be used.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-swatch" href="swatch.html" data-id="swatch" aria-label="Swatch, a colour sorting puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet"><g id="sg"></g></svg>
+      </div>
+      <div class="body">
+        <h2>Swatch</h2>
+        <p class="meta"><span>Colour</span><span>Sort</span><span>About 3 min</span></p>
+        <p class="what">Swap paint chips until the colours melt smoothly from one corner of the board to the other.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+    <a class="card c-rung" href="rungs.html" data-id="rungs" aria-label="Rungs, a word ladder puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet" id="rgl"></svg>
+      </div>
+      <div class="body">
+        <h2>Rungs</h2>
+        <p class="meta"><span>Words</span><span>Ladder</span><span>About 3 min</span></p>
+        <p class="what">Climb from one word to another. Every rung is a real word, one letter different from the one below.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+
+    <a class="card c-conduit" href="conduit.html" data-id="conduit" aria-label="Conduit, a pipe puzzle">
+      <div class="media" aria-hidden="true">
+        <svg viewBox="0 0 300 168" preserveAspectRatio="xMidYMid meet" id="cdg"></svg>
+      </div>
+      <div class="body">
+        <h2>Conduit</h2>
+        <p class="meta"><span>Pipes</span><span>Logic</span><span>About 4 min</span></p>
+        <p class="what">Turn the copper pipes until water from the brass valve reaches every tile on the board.</p>
+        <div class="foot"><span class="status" data-status><svg viewBox="0 0 14 14"><path d="M2 7.5L5.6 11L12 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><b data-st>Not played today</b></span><span class="go">Play <svg viewBox="0 0 16 12"><path d="M0 6H14M9 1L14.5 6L9 11" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></div>
+      </div>
+    </a>
+  </main>
+
+  <p class="credit">Daily and Endless in every game · progress is saved in this browser</p>
+</div>
+<a class="corner" href="https://averybeuth.xyz/">averybeuth.xyz</a>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var $ = function (id) { return document.getElementById(id); };
+  function p2(n) { return String(n).padStart(2, '0'); }
+  var now = new Date(), today = now.getFullYear() + '-' + p2(now.getMonth() + 1) + '-' + p2(now.getDate());
+  var parts = today.split('-').map(Number), dayNo = Math.round((Date.UTC(parts[0], parts[1] - 1, parts[2]) - Date.UTC(2026, 10, 9)) / 86400000) + 1;
+  $('when').textContent = 'No. ' + dayNo + ' · ' + now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+
+  /* cork grain, drawn once */
+  try {
+    var s = 7, r = function () { s = (s * 16807) % 2147483647; return s / 2147483647; }, h = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320">';
+    for (var i = 0; i < 420; i++) {
+      var d = r() < 0.55, x = (r() * 320).toFixed(1), y = (r() * 320).toFixed(1), rx = (0.8 + r() * 3.2).toFixed(1), ry = (0.6 + r() * 2.4).toFixed(1);
+      h += '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + (d ? 'rgba(80,45,15,' + (0.12 + r() * 0.22).toFixed(2) + ')' : 'rgba(255,225,170,' + (0.1 + r() * 0.2).toFixed(2) + ')') + '" transform="rotate(' + Math.round(r() * 180) + ' ' + x + ' ' + y + ')"/>';
+    }
+    h += '</svg>';
+    document.documentElement.style.setProperty('--cork-tile', 'url("data:image/svg+xml;base64,' + btoa(h) + '")');
+  } catch (e) {}
+
+  /* the little mosaic on the Tessera card */
+  (function () {
+    var pat = ['01010', '01110', '11011', '11111', '10101'], cols = ['#b0502f', '#d3a44a', '#2f7d7a', '#efe0bd'], h = '', n = 0;
+    for (var rr = 0; rr < 5; rr++) for (var c = 0; c < 5; c++) {
+      var x = 108 + c * 30, y = 28 + rr * 30;
+      if (pat[rr][c] === '1') { h += '<rect class="tl" style="--d:' + (Math.abs(rr - 2) + Math.abs(c - 2)) + '" x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="25" height="25" rx="4" fill="' + cols[(rr + c) % 4] + '" stroke="rgba(0,0,0,0.35)" transform="rotate(' + (((rr * 5 + c) % 5) - 2) + ' ' + (x + 14) + ' ' + (y + 14) + ')"/>'; }
+      else h += '<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="24" height="24" rx="4" fill="rgba(60,40,20,0.35)"/>';
+    }
+    $('tg').innerHTML = h;
+  })();
+
+
+  /* the little track layout on the Rail card */
+  (function () {
+    var n = 5, cs = 29, ox = 78, oy = 12, h = '', cols = ['#e0472f', '#2f74d6', '#eab730', '#2f9e62'];
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) h += '<rect x="' + (ox + c * cs + 1) + '" y="' + (oy + r * cs + 1) + '" width="' + (cs - 2) + '" height="' + (cs - 2) + '" rx="3" fill="' + ((r + c) % 2 ? '#524c46' : '#4a4540') + '"/>';
+    var paths = [[[0, 0], [1, 0], [2, 0], [2, 1]], [[0, 1], [0, 2], [0, 3], [1, 3], [1, 4]], [[3, 0], [4, 0], [4, 1], [4, 2], [3, 2]], [[2, 2], [2, 3], [2, 4], [3, 4], [4, 4]]];
+    function pt(p) { return (ox + p[0] * cs + cs / 2) + ',' + (oy + p[1] * cs + cs / 2); }
+    paths.forEach(function (p, k) {
+      var pts = p.map(pt).join(' ');
+      h += '<polyline class="tr" style="--d:' + k + '" pathLength="100" points="' + pts + '" fill="none" stroke="' + cols[k] + '" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>';
+      h += '<polyline points="' + pts + '" fill="none" stroke="#d2d6db" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><polyline points="' + pts + '" fill="none" stroke="#2a1d12" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+      [p[0], p[p.length - 1]].forEach(function (e) { var q = pt(e).split(','); h += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="9.5" fill="#f4ead2"/><circle cx="' + q[0] + '" cy="' + q[1] + '" r="7" fill="' + cols[k] + '"/>'; });
+    });
+    $('rg').innerHTML = h;
+  })();
+
+  /* the paint chips on the Swatch card */
+  (function () {
+    var cols = 7, rows = 4, cw = 34, gap = 5, ox = (300 - (cols * cw + (cols - 1) * gap)) / 2, oy = 14, h = '';
+    var A = [244, 184, 96], B = [226, 83, 107], C = [95, 179, 161], D = [74, 79, 163];
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      var u = c / (cols - 1), v = r / (rows - 1), col = [0, 1, 2].map(function (k) { return Math.round((1 - v) * ((1 - u) * A[k] + u * B[k]) + v * ((1 - u) * C[k] + u * D[k])); });
+      var x = ox + c * (cw + gap), y = oy + r * (cw + gap), fix = (r === 0 && (c === 0 || c === cols - 1)) || (r === rows - 1 && (c === 0 || c === cols - 1));
+      h += '<g class="chip" style="--d:' + (r + c) + '"><rect x="' + x + '" y="' + y + '" width="' + cw + '" height="' + cw + '" rx="5" fill="rgb(' + col.join(',') + ')" stroke="#fbf8f1" stroke-width="3"/>' + (fix ? '<circle cx="' + (x + cw / 2) + '" cy="' + (y + cw / 2) + '" r="4" fill="#fff" fill-opacity="0.92"/>' : '') + '</g>';
+    }
+    $('sg').innerHTML = h;
+  })();
+
+  /* the little ladder on the Rungs card */
+  (function () {
+    var rows = [['s', 'h', 'o', 'r', 'e'], ['s', 'h', 'o', 'n', 'e'], ['s', 't', 'o', 'n', 'e']], chg = { 0: 3, 1: 1 }, ys = [12, 68, 124], h = '';
+    h += '<rect x="58" y="0" width="16" height="168" rx="4" fill="#b2834b" stroke="#6e4a22" stroke-opacity="0.6"/><rect x="226" y="0" width="16" height="168" rx="4" fill="#b2834b" stroke="#6e4a22" stroke-opacity="0.6"/>';
+    h += '<rect x="62" y="0" width="3" height="168" fill="#e0b987" opacity="0.5"/><rect x="230" y="0" width="3" height="168" fill="#e0b987" opacity="0.5"/>';
+    rows.forEach(function (w, r) {
+      var y = ys[r];
+      h += '<rect x="52" y="' + (y + 16) + '" width="196" height="12" rx="6" fill="#a9783f" stroke="#6e4a22" stroke-opacity="0.55"/>';
+      for (var k = 0; k < 5; k++) {
+        var x = 76 + k * 30, end = r === 0 || r === 2, lit = chg[r] === k, fill = end ? '#e2b95a' : (lit ? '#fbe39a' : '#f6efdc');
+        h += '<g class="rt" style="--d:' + (k + (2 - r) * 2) + '"><rect x="' + x + '" y="' + y + '" width="27" height="32" rx="4" fill="' + fill + '" stroke="#6e4a22" stroke-opacity="0.5"/><text x="' + (x + 13.5) + '" y="' + (y + 23) + '" text-anchor="middle" font-family="Zilla Slab, Georgia, serif" font-weight="700" font-size="20" fill="#2b2118">' + w[k].toUpperCase() + '</text></g>';
+      }
+    });
+    $('rgl').innerHTML = h;
+  })();
+
+  /* the little pipe board on the Conduit card */
+  (function () {
+    var h = '<defs><pattern id="cdp" width="56" height="56" patternUnits="userSpaceOnUse" x="10"><rect x="2" y="2" width="52" height="52" rx="4" fill="#3d454c" stroke="#14181b" stroke-width="1.5"/><circle cx="7" cy="7" r="1.6" fill="#8a939a"/><circle cx="49" cy="7" r="1.6" fill="#8a939a"/><circle cx="7" cy="49" r="1.6" fill="#8a939a"/><circle cx="49" cy="49" r="1.6" fill="#8a939a"/></pattern></defs><rect x="10" y="0" width="280" height="168" fill="url(#cdp)"/>';
+    var main = 'M38 84H150V28H262V84', br = 'M150 84H206V140', dry = 'M94 140V112';
+    [main, br, dry].forEach(function (d) { h += '<path d="' + d + '" fill="none" stroke="#6e3a20" stroke-width="19" stroke-linejoin="round"/><path d="' + d + '" fill="none" stroke="#cb7a4b" stroke-width="14" stroke-linejoin="round"/><path d="' + d + '" fill="none" stroke="rgba(255,230,200,0.4)" stroke-width="3" stroke-linejoin="round"/>'; });
+    [main, br].forEach(function (d) { h += '<path class="cw" pathLength="100" d="' + d + '" fill="none" stroke="#55cfec" stroke-width="7" stroke-linejoin="round" stroke-linecap="butt"/>'; });
+    [[150, 84], [150, 28], [262, 28], [206, 84]].forEach(function (c) { h += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="11" fill="#cb7a4b" stroke="#6e3a20" stroke-width="2.5"/>'; });
+    [[262, 84], [206, 140]].forEach(function (c) { h += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="10" fill="#cb7a4b" stroke="#6e3a20" stroke-width="2.5"/><circle cx="' + c[0] + '" cy="' + c[1] + '" r="3.5" fill="#55cfec"/>'; });
+    h += '<circle cx="94" cy="112" r="10" fill="#cb7a4b" stroke="#6e3a20" stroke-width="2.5"/><circle cx="94" cy="112" r="3" fill="#6e3a20"/>';
+    h += '<g class="cv"><circle cx="38" cy="84" r="21" fill="none" stroke="#7a5a1c" stroke-width="7"/><circle cx="38" cy="84" r="21" fill="none" stroke="#dcb35a" stroke-width="4.5"/><path d="M38 66V102M20 84H56M25 71L51 97M51 71L25 97" stroke="#dcb35a" stroke-width="2.5" stroke-linecap="round"/><circle cx="38" cy="84" r="6" fill="#b98a38" stroke="#6d5320" stroke-width="2"/></g>';
+    $('cdg').innerHTML = h;
+  })();
+
+  /* which of today's puzzles are already done, read from each game's saved data */
+  var CHECK = {
+    leadline: function (o) { return o && o.wd && o.wd.key === today && !!o.wd.recorded; },
+    plumb: function (o) { return o && o.d && o.d.key === today && !!o.d.rec; },
+    tally: function (o) { return o && o.d && o.d.key === today && !!o.d.rec; },
+    sampler: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    tessera: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    dispatch: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    lanterns: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    departures: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    rail: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    swatch: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    rungs: function (o) { return o && o.d && o.d.key === today && !!o.d.done; },
+    conduit: function (o) { return o && o.d && o.d.key === today && !!o.d.done; }
+  };
+  var KEYS = { leadline: 'leadline:v2', plumb: 'plumb:v1', tally: 'tally:v1', sampler: 'sampler:v1', tessera: 'tessera:v1', dispatch: 'dispatch:v1', lanterns: 'lanterns:v1', departures: 'departures:v1', rail: 'rail:v1', swatch: 'swatch:v1', rungs: 'rungs:v1', conduit: 'conduit:v1' };
+  var cards = [].slice.call(document.querySelectorAll('.card')), doneIds = [];
+  cards.forEach(function (c) {
+    var id = c.getAttribute('data-id'), ok = false;
+    try { var raw = localStorage.getItem(KEYS[id]); ok = !!CHECK[id](raw ? JSON.parse(raw) : null); } catch (e) { ok = false; }
+    var st = c.querySelector('[data-status]'); st.classList.toggle('done', ok); c.querySelector('[data-st]').textContent = ok ? 'Done today' : 'Not played today';
+    if (ok) doneIds.push(id);
+  });
+  var pegs = $('pegs').querySelectorAll('i');
+  for (var i = 0; i < pegs.length; i++) pegs[i].classList.toggle('on', i < doneIds.length);
+  $('pegTxt').textContent = doneIds.length + ' of 12 today';
+  $('pegs').setAttribute('aria-label', doneIds.length + ' of 12 daily puzzles finished today');
+
+  /* cards drop onto the board */
+  if (!reduce && cards[0].animate) cards.forEach(function (c, k) {
+    try { c.animate([{ opacity: 0, transform: 'translateY(-34px) rotate(' + ((k % 2 ? 4 : -4)) + 'deg)' }, { opacity: 1, transform: 'translateY(4px) rotate(var(--tilt))', offset: 0.7 }, { opacity: 1 }], { duration: 800, delay: 150 + k * 110, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' }); } catch (e) {}
+  });
+
+  /* Pick one for me */
+  var busy = false;
+  $('pickBtn').addEventListener('click', function () {
+    if (busy) return; busy = true;
+    var pool = cards.filter(function (c) { return doneIds.indexOf(c.getAttribute('data-id')) < 0; });
+    if (!pool.length) pool = cards;
+    var target = pool[Math.floor(Math.random() * pool.length)], seq = [], steps = reduce ? 0 : 14 + Math.floor(Math.random() * 4);
+    cards.forEach(function (c) { c.classList.remove('picked', 'lit'); });
+    $('pickMsg').textContent = '';
+    var ti = cards.indexOf(target), start = (ti - steps % cards.length + cards.length * 10) % cards.length, i = 0;
+    for (var k = 0; k <= steps; k++) seq.push(cards[(start + k) % cards.length]);
+    seq[seq.length - 1] = target;
+    (function step() {
+      cards.forEach(function (c) { c.classList.remove('lit'); });
+      var c = seq[i]; c.classList.add('lit');
+      if (i === seq.length - 1) {
+        c.classList.remove('lit'); c.classList.add('picked');
+        $('pickMsg').textContent = 'Try ' + c.querySelector('h2').textContent + ' next.';
+        try { c.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); } catch (e) {}
+        busy = false; return;
+      }
+      i++; setTimeout(step, 70 + i * i * 2.2);
+    })();
+  });
+})();
+</script>

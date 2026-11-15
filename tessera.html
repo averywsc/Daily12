@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>Tessera</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Marcellus&display=swap">
+<style>
+/* Layout: a mosaic being restored in a dark plaster wall niche. Centre-left, a pale plaster bed edged with
+   a Greek key band holds the grid: limestone clue strips along the top and left, and a mortar-dark field of
+   pits where stone tiles are laid by hand (each tile is cut a little differently). Right, the chisel tools,
+   a carved timer, the result plaque and the record. When the picture is right, the tiles take their colours
+   in a wave from the centre. On a phone everything stacks. */
+:root {
+  --wall: #2a1f1a; --wall2: #1d1512; --plaster: #dccdad; --plaster2: #cdbb97; --mortar: #4b392d; --ink: #3e3226; --muted: #8a7a62;
+  --lime: #d9cfb8; --terra: #b0502f; --gold: #d3a44a; --cream: #f1e4c4;
+  --serif: 'Marcellus', 'Trajan Pro', 'Palatino Linotype', Georgia, serif; --sans: 'Alegreya Sans', 'Segoe UI', 'Trebuchet MS', sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --grain: none; --key: none; --n: 7;
+  --cell: clamp(30px, min(calc((100vw - 190px - 4.5vw) / var(--n)), calc((100dvh - 300px) / var(--n))), 64px);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--wall2); }
+body {
+  margin: 0; min-height: 100dvh; color: var(--cream); font: 400 18px/1.4 var(--sans); position: relative; overflow-x: clip;
+  background:
+    var(--grain),
+    radial-gradient(60% 45% at 50% -5%, rgba(255, 168, 80, 0.2), transparent 70%),
+    radial-gradient(35% 50% at 100% 100%, rgba(255, 140, 60, 0.07), transparent 70%),
+    repeating-linear-gradient(0deg, transparent 0 118px, rgba(0, 0, 0, 0.22) 118px 120px),
+    repeating-linear-gradient(90deg, transparent 0 238px, rgba(0, 0, 0, 0.18) 238px 240px),
+    linear-gradient(180deg, #33261f, var(--wall) 40%, var(--wall2));
+  padding: 14px 0 44px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(100% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.55) 100%); }
+h1, h2, h3, p, ol, dl, dd { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+.wrap { position: relative; z-index: 1; max-width: 1380px; margin: 0 auto; }
+.motes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.motes i { position: absolute; border-radius: 50%; background: #ffcf95; opacity: 0; animation: mote var(--t) ease-in-out var(--d) infinite; }
+@keyframes mote { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 0.7; } 80% { opacity: 0.4; } 100% { opacity: 0; transform: translate(var(--x), -180px); } }
+
+/* ---------- header ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 20px; padding: 6px 0 16px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.mark { width: 46px; height: 46px; flex: 0 0 auto; }
+.mark rect { transform-box: fill-box; transform-origin: center; }
+.brand h1 { font: 400 clamp(1.9rem, 4.6vw, 2.8rem)/1 var(--serif); letter-spacing: 0.2em; text-transform: uppercase; color: #e6d3a8; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 220, 160, 0.28), 0 3px 8px rgba(0, 0, 0, 0.5); }
+.brand .sub { font: 500 0.92rem/1.2 var(--sans); letter-spacing: 0.1em; color: #a9977a; margin-top: 5px; text-transform: uppercase; }
+.tools { display: flex; align-items: center; gap: 14px; }
+.tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; background: rgba(0, 0, 0, 0.28); border-radius: 6px; padding: 3px; box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 220, 160, 0.14); }
+.tabs button { position: relative; z-index: 1; background: none; border: 0; cursor: pointer; padding: 9px 18px; font: 700 0.8rem/1 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: #a9977a; transition: color 0.5s; }
+.tabs button[aria-pressed="true"] { color: #2c2018; }
+.tabs .pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 4px; background: linear-gradient(#e8d29a, #c9a85a); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 2px 4px rgba(0, 0, 0, 0.5); transition: transform 0.7s var(--ease); }
+.tabs[data-m="endless"] .pill { transform: translateX(100%); }
+.help { width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer; font: 400 1.2rem/1 var(--serif); color: #e6d3a8; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 220, 160, 0.14); transition: background 0.3s, transform 0.4s var(--ease); }
+.help:hover { background: rgba(211, 164, 74, 0.25); transform: scale(1.08); }
+
+/* ---------- layout ---------- */
+.work { display: grid; grid-template-columns: auto minmax(300px, 1fr); gap: clamp(22px, 4vw, 64px); align-items: start; justify-content: center; }
+
+/* ---------- plaster bed ---------- */
+.bed {
+  position: relative; padding: 46px clamp(16px, 2.4vw, 32px) 46px; border-radius: 5px;
+  background:
+    radial-gradient(24px 18px at 12% 14%, rgba(130, 95, 50, 0.16), transparent 70%),
+    radial-gradient(40px 22px at 86% 70%, rgba(130, 95, 50, 0.13), transparent 70%),
+    radial-gradient(18px 28px at 30% 92%, rgba(130, 95, 50, 0.12), transparent 70%),
+    var(--grain), linear-gradient(160deg, #e6d9bb, var(--plaster) 50%, var(--plaster2));
+  box-shadow: 0 0 0 3px #8e6a44, 0 0 0 5px #3b2a1d, 0 24px 40px -12px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 0 40px rgba(120, 85, 40, 0.28);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+.bed::before, .bed::after { content: ""; position: absolute; left: 12px; right: 12px; height: 24px; background: var(--key) center / 24px 24px repeat-x; opacity: 0.8; pointer-events: none; }
+.bed::before { top: 10px; } .bed::after { bottom: 10px; }
+.cracks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.35; }
+.field { position: relative; display: grid; grid-template-columns: auto repeat(var(--n), var(--cell)); grid-template-rows: auto repeat(var(--n), var(--cell)); touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.corner { display: grid; place-items: end start; padding: 0 10px 8px 4px; }
+.cc, .rc { display: flex; color: #4c3e2d; font: 700 clamp(0.8rem, calc(var(--cell) * 0.4), 1.15rem)/1 var(--serif); font-variant-numeric: tabular-nums; }
+.cc { flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; padding: 0 0 6px; margin: 0 1px 4px; position: relative; border-radius: 5px 5px 2px 2px; background: var(--grain), linear-gradient(#d7cdb4, #c7bca1); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 3px rgba(100, 80, 40, 0.3), 0 1px 2px rgba(60, 40, 15, 0.35); }
+.rc { justify-content: flex-end; align-items: center; gap: 9px; padding: 0 10px 0 14px; margin: 1px 5px 1px 0; position: relative; border-radius: 5px 2px 2px 5px; background: var(--grain), linear-gradient(90deg, #c7bca1, #d7cdb4); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset -2px 0 3px rgba(100, 80, 40, 0.3), 0 1px 2px rgba(60, 40, 15, 0.35); }
+.cc b, .rc b { font-weight: 700; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55), 0 -1px 0 rgba(60, 40, 15, 0.3); transition: opacity 0.6s; }
+.cc::after, .rc::after { content: ""; position: absolute; background: var(--terra); border-radius: 2px; transform: scale(0); transition: transform 0.7s var(--ease); pointer-events: none; opacity: 0.85; }
+.cc::after { top: 14%; bottom: 14%; left: 50%; width: 2.5px; margin-left: -1px; transform-origin: top; }
+.rc::after { left: 10%; right: 8%; top: 50%; height: 2.5px; margin-top: -1px; transform-origin: left; }
+.cc.ok, .rc.ok { filter: saturate(0.6) brightness(0.96); }
+.cc.ok b, .rc.ok b { opacity: 0.38; }
+.cc.ok::after { transform: scaleY(1); } .rc.ok::after { transform: scaleX(1); }
+.cc.hot, .rc.hot { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 2px var(--gold), 0 1px 2px rgba(60, 40, 15, 0.35); }
+.pits { grid-column: 2 / -1; grid-row: 2 / -1; display: grid; grid-template-columns: repeat(var(--n), var(--cell)); grid-template-rows: repeat(var(--n), var(--cell)); background: var(--mortar); border-radius: 4px; box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.65), 0 0 0 3px #9b8566, 0 0 0 4px rgba(0, 0, 0, 0.3), 0 1px 0 4px rgba(255, 255, 255, 0.3); overflow: hidden; background-image: var(--grain), radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05), transparent 60%); }
+.cell { position: relative; border: 0; padding: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.cell::before { content: ""; position: absolute; inset: 3px; border-radius: var(--rad, 5px); background: rgba(20, 12, 6, 0.28); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 220, 170, 0.07); transition: background 0.3s; }
+.cell:hover::before { background: rgba(255, 230, 190, 0.09); }
+.cell.sel::before { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(211, 164, 74, 0.8); }
+.tl { position: absolute; inset: var(--ins, 3px); border-radius: var(--rad); transform: rotate(var(--rot, 0deg)) scale(var(--sc, 1)); background: linear-gradient(var(--ang, 145deg), color-mix(in srgb, var(--col) 78%, white), var(--col) 52%, color-mix(in srgb, var(--col) 80%, black)); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 4px 5px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.18); transition: background-color 0.9s ease; pointer-events: none; }
+.tl::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--grain), radial-gradient(circle at var(--cx, 30%) var(--cy, 30%), rgba(255, 255, 255, 0.28), transparent 42%); mix-blend-mode: soft-light; }
+.tl::before { content: ""; position: absolute; left: var(--fx, 62%); top: var(--fy, 58%); width: 14%; height: 9%; border-radius: 50%; background: rgba(0, 0, 0, 0.14); box-shadow: -8px -5px 0 rgba(0, 0, 0, 0.08); transform: rotate(var(--rot)); }
+.gap { position: absolute; inset: 28%; pointer-events: none; }
+.gap path { stroke: #b49a72; stroke-width: 3; stroke-linecap: round; fill: none; stroke-dasharray: 1; stroke-dashoffset: 0; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); }
+.cell.bad .tl, .cell.bad .gap { animation: slip 0.5s ease 2; }
+.cell.bad::after { content: ""; position: absolute; inset: 3px; border-radius: 4px; background: linear-gradient(120deg, transparent 46%, rgba(255, 60, 30, 0.95) 47% 50%, transparent 51%), rgba(176, 40, 20, 0.3); box-shadow: 0 0 0 2px rgba(255, 90, 60, 0.9); pointer-events: none; animation: crackin 2.4s ease both; }
+@keyframes slip { 25% { transform: rotate(calc(var(--rot, 0deg) - 5deg)) scale(1.04); } 75% { transform: rotate(calc(var(--rot, 0deg) + 5deg)) scale(1.04); } }
+@keyframes crackin { 0% { opacity: 0; } 12%, 80% { opacity: 1; } 100% { opacity: 0; } }
+.done .cell { cursor: default; }
+.done .pits { box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.65), 0 0 0 3px #c9a85a, 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 30px 4px rgba(255, 200, 100, 0.45); transition: box-shadow 1.2s ease 0.8s; }
+
+/* ---------- side ---------- */
+.side { display: grid; gap: 18px; align-content: start; max-width: 520px; }
+.coach { min-height: 3.3em; padding: 2px 0 2px 16px; border-left: 3px solid var(--gold); }
+.coach b { display: block; font: 400 1.35rem/1.15 var(--serif); color: #f1e4c4; letter-spacing: 0.02em; }
+.coach span { color: #b5a487; }
+.panel { position: relative; padding: 16px; border-radius: 8px; background: var(--grain), linear-gradient(160deg, #3b2c24, #2c211b); box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.09), inset 0 2px 8px rgba(0, 0, 0, 0.5), 0 10px 20px -8px rgba(0, 0, 0, 0.7); display: grid; gap: 14px; }
+.chisels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chis { position: relative; display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 4px; text-align: left; cursor: pointer; border: 0; padding: 10px 12px; border-radius: 6px; background: rgba(0, 0, 0, 0.22); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 220, 160, 0.1); transition: background 0.4s, transform 0.4s var(--ease), box-shadow 0.4s; color: #b5a487; }
+.chis svg { width: 38px; height: 38px; }
+.chis b { display: block; font: 400 1.05rem/1.1 var(--serif); color: inherit; }
+.chis small { font: 500 0.78rem/1.1 var(--sans); letter-spacing: 0.05em; opacity: 0.8; }
+.chis[aria-pressed="true"] { color: #2c2018; background: linear-gradient(#ead59f, #cfae62); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 4px 8px rgba(0, 0, 0, 0.5); transform: translateY(-2px); }
+.chis:hover { transform: translateY(-2px); }
+.row2 { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.btn { position: relative; border: 0; cursor: pointer; padding: 11px 18px; border-radius: 5px; font: 700 0.8rem/1 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: #2c2018; background: linear-gradient(#e8d6a6, #c5a769); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 3px 5px rgba(0, 0, 0, 0.5); transition: transform 0.4s var(--ease), opacity 0.4s; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); } .btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.dark { color: #e6d3a8; background: linear-gradient(#4c3b30, #3a2d24); box-shadow: 0 1px 0 rgba(255, 220, 160, 0.14) inset, 0 3px 5px rgba(0, 0, 0, 0.5); }
+.btn.hot { background: linear-gradient(#cf6a44, #a84a2b); color: #fff2e0; }
+.clock { display: flex; align-items: baseline; gap: 10px; font: 400 2rem/1 var(--serif); color: #e6d3a8; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 220, 160, 0.2); }
+.clock small { font: 700 0.7rem/1 var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: #a9977a; text-shadow: none; }
+.checks { font: 500 0.95rem/1.1 var(--sans); color: #b5a487; }
+.plaque { position: relative; padding: 24px 22px 22px; text-align: center; border-radius: 6px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #e9ddc0, #d6c6a2); box-shadow: 0 0 0 3px #8e6a44, 0 0 0 5px #3b2a1d, 0 18px 30px -10px rgba(0, 0, 0, 0.8), inset 0 0 24px rgba(120, 85, 40, 0.25); transform-origin: 50% 0; }
+.plaque::before { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(110, 80, 40, 0.4); border-radius: 3px; pointer-events: none; }
+.plaque h2 { font: 400 1.8rem/1.05 var(--serif); letter-spacing: 0.08em; text-transform: uppercase; color: #7a3a22; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.plaque p { margin-top: 6px; font-size: 1.05rem; }
+.plaque .stats { display: flex; justify-content: center; gap: 26px; margin: 14px 0 4px; }
+.plaque .stats div { display: grid; gap: 3px; } .plaque .stats b { font: 400 1.7rem/1 var(--serif); font-variant-numeric: tabular-nums; } .plaque .stats span { font: 700 0.66rem/1 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: #8a7456; }
+.plaque .foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.plaque .next { margin-top: 12px; font: 700 0.74rem/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: #8a7456; font-variant-numeric: tabular-nums; }
+.record h3 { font: 700 0.74rem/1 var(--sans); letter-spacing: 0.22em; text-transform: uppercase; color: #a9977a; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 220, 160, 0.18); margin-bottom: 12px; }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.nums div { display: grid; gap: 4px; } .nums b { font: 400 1.7rem/1 var(--serif); font-variant-numeric: tabular-nums; color: #f1e4c4; } .nums span { font: 700 0.66rem/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; color: #a9977a; }
+
+/* ---------- how to play ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 14px max(14px, env(safe-area-inset-left, 0px)); background: rgba(10, 6, 4, 0.74); animation: fadein 0.3s ease-out both; }
+@keyframes fadein { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(20px); } }
+.how { --loop: 14s; width: 100%; max-width: 490px; max-height: 100%; overflow: auto; padding: 24px 22px 20px; display: grid; gap: 14px; border-radius: 6px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #e9ddc0, #d6c6a2); box-shadow: 0 0 0 3px #8e6a44, 0 0 0 5px #3b2a1d, 0 30px 70px -10px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(120, 85, 40, 0.25); animation: rise 0.7s var(--ease) both; }
+.how h2 { font: 400 1.7rem/1 var(--serif); letter-spacing: 0.1em; text-transform: uppercase; color: #7a3a22; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.how .lead { margin-top: -6px; color: #6d5d44; }
+.demo { --c: 52px; justify-self: center; display: grid; grid-template-columns: auto repeat(3, var(--c)); grid-template-rows: auto repeat(3, var(--c)); padding: 10px 14px 14px 10px; border-radius: 6px; background: rgba(255, 255, 255, 0.35); box-shadow: inset 0 0 0 1px rgba(110, 80, 40, 0.3); }
+.demo .cc, .demo .rc { font-size: 1.05rem; }
+.demo .cc { padding-bottom: 4px; }
+.demo .pits { grid-column: 2 / -1; grid-row: 2 / -1; grid-template-columns: repeat(3, var(--c)); grid-template-rows: repeat(3, var(--c)); }
+.demo .cell { cursor: default; }
+.demo .tl { --col: #b8ad98; animation-duration: var(--loop); animation-iteration-count: infinite; animation-timing-function: ease; opacity: 0; }
+.demo .gap path { animation: dgap var(--loop) infinite; }
+.demo .gap { opacity: 0; animation: dgapbox var(--loop) infinite; }
+@keyframes dcol { 0%, 74% { background-color: #b8ad98; } 82%, 94% { background-color: var(--fin); } 98%, 100% { background-color: #b8ad98; } }
+@keyframes dgapbox { 0%, 55% { opacity: 0; } 58%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+@keyframes dgap { 0%, 55% { stroke-dashoffset: 1; } 62%, 100% { stroke-dashoffset: 0; } }
+.demo .rc.d1::after, .demo .cc.d1::after { animation: dstrike var(--loop) infinite; transform: scale(0); }
+.demo .rc.d1::after { transform-origin: left; } .demo .cc.d1::after { transform-origin: top; }
+@keyframes dstrike { 0%, 26% { transform: scale(0); } 32%, 94% { transform: scale(1); } 98%, 100% { transform: scale(0); } }
+.demo .rc.d1 b, .demo .cc.d1 b { animation: dfade var(--loop) infinite; }
+@keyframes dfade { 0%, 26% { opacity: 1; } 32%, 94% { opacity: 0.38; } 98%, 100% { opacity: 1; } }
+.demo .rc.d2::after, .demo .cc.d2::after { animation: dstrike2 var(--loop) infinite; transform: scale(0); }
+.demo .rc.d2::after { transform-origin: left; } .demo .cc.d2::after { transform-origin: top; }
+@keyframes dstrike2 { 0%, 44% { transform: scale(0); } 50%, 94% { transform: scale(1); } 98%, 100% { transform: scale(0); } }
+.demo .rc.d2 b, .demo .cc.d2 b { animation: dfade2 var(--loop) infinite; }
+@keyframes dfade2 { 0%, 44% { opacity: 1; } 50%, 94% { opacity: 0.38; } 98%, 100% { opacity: 1; } }
+.how ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+.how li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.how li::before { content: counter(s); width: 28px; height: 28px; display: grid; place-items: center; border-radius: 4px; font: 400 1rem/1 var(--serif); color: #7a3a22; border: 1.5px solid #7a3a22; animation: lit1 var(--loop) infinite; }
+.how li:nth-child(2)::before { animation-name: lit2; } .how li:nth-child(3)::before { animation-name: lit3; }
+@keyframes lit1 { 0%, 24% { background: #7a3a22; color: #fff; } 28%, 100% { background: transparent; color: #7a3a22; } }
+@keyframes lit2 { 0%, 26% { background: transparent; color: #7a3a22; } 30%, 62% { background: #7a3a22; color: #fff; } 66%, 100% { background: transparent; color: #7a3a22; } }
+@keyframes lit3 { 0%, 64% { background: transparent; color: #7a3a22; } 68%, 94% { background: #7a3a22; color: #fff; } 98%, 100% { background: transparent; color: #7a3a22; } }
+.how .foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.how .foot p { color: #6d5d44; font-size: 0.95rem; font-style: italic; }
+
+@media (max-width: 900px) {
+  :root { --cell: clamp(28px, min(calc((100vw - 170px) / var(--n)), calc((100dvh - 330px) / var(--n))), 56px); }
+  .work { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 18px; }
+  .side { width: 100%; }
+  .bed { padding: 42px 12px 42px; }
+}
+@media (max-width: 440px) {
+  .rc { gap: 6px; padding: 0 6px 0 8px; margin-right: 3px; }
+  .chis { grid-template-columns: 34px 1fr; padding: 8px; } .chis svg { width: 32px; height: 32px; } .chis small { display: none; }
+  .btn { padding: 11px 14px; }
+  .nums b { font-size: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .motes { display: none; }
+}
+</style>
+
+<div class="motes" id="motes" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" id="mark" viewBox="0 0 46 46" aria-hidden="true"></svg>
+      <div><h1>Tessera</h1><p class="sub" id="sub"></p></div>
+    </div>
+    <div class="tools">
+      <div class="tabs" id="tabs" data-m="daily" role="group" aria-label="Mode">
+        <span class="pill" aria-hidden="true"></span>
+        <button type="button" id="mDaily" aria-pressed="true">Daily</button>
+        <button type="button" id="mEndless" aria-pressed="false">Endless</button>
+      </div>
+      <button type="button" class="help" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="work" id="work">
+    <section class="bed" id="bed" aria-label="The mosaic">
+      <svg class="cracks" viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#6b4a24" stroke-width="0.8" stroke-linecap="round"><path d="M0 70 L22 78 L30 96 L58 100"/><path d="M400 300 L372 296 L360 318 L338 322 L330 346"/><path d="M120 400 L126 380 L112 366"/><path d="M392 40 L378 52 L384 70"/></g></svg>
+      <div class="field" id="field"></div>
+    </section>
+
+    <aside class="side">
+      <div class="coach" id="coach" aria-live="polite"></div>
+      <div class="panel" id="tools">
+        <div class="chisels" role="group" aria-label="Tool">
+          <button type="button" class="chis" id="tLay" aria-pressed="true"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="8" y="9" width="24" height="22" rx="4" fill="#c9b48a" stroke="#2c2018" stroke-width="1.6" transform="rotate(-6 20 20)"/><path d="M13 14l10-2" stroke="#fff" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round"/></svg><span><b>Tile</b><small>tap to place</small></span></button>
+          <button type="button" class="chis" id="tGap" aria-pressed="false"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M11 11L29 29M29 11L11 29" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg><span><b>Empty</b><small>tap to mark ✕</small></span></button>
+        </div>
+        <div class="row2"><div class="clock" id="clock"><span id="time">00:00</span><small>time</small></div><p class="checks" id="checkn"></p></div>
+        <div class="row2"><button type="button" class="btn dark" id="clear">Start over</button><button type="button" class="btn" id="check">Check</button></div>
+      </div>
+      <div class="plaque" id="plaque" hidden></div>
+      <section class="record" aria-label="Record"><h3 id="recT">Record</h3><div class="nums" id="nums"></div></section>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="how" id="how" role="dialog" aria-modal="true" aria-labelledby="howT"></div></div>
+
+<script>
+// Tessera rules. No DOM in here, so the same file runs in the page and in node.
+
+const EPOCH = '2026-11-09';
+
+function hashStr(s) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed | 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function dateKey(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function dayNumber(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const [ey, em, ed] = EPOCH.split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ey, em - 1, ed)) / 86400000) + 1;
+}
+
+// Lengths of the runs of filled cells in a line, in order. An empty line gives [].
+function runs(line) {
+  const out = []; let cur = 0;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === 1) cur++; else if (cur) { out.push(cur); cur = 0; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+function sameRuns(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+function cluesOf(grid, n) {
+  const rows = [], cols = [];
+  for (let i = 0; i < n; i++) {
+    rows.push(runs(grid.slice(i * n, i * n + n)));
+    const c = []; for (let r = 0; r < n; r++) c.push(grid[r * n + i]);
+    cols.push(runs(c));
+  }
+  return { rows, cols };
+}
+
+// Could this column, filled down to its current length, still match its clue?
+function prefixOK(bits, clue, n) {
+  const k = bits.length, done = [];
+  let cur = 0;
+  for (let i = 0; i < k; i++) { if (bits[i]) cur++; else if (cur) { done.push(cur); cur = 0; } }
+  for (let i = 0; i < done.length; i++) if (done[i] !== clue[i]) return false;
+  const ci = done.length;
+  if (cur && (ci >= clue.length || cur > clue[ci])) return false;
+  const remain = clue.slice(cur ? ci + 1 : ci);
+  let need = remain.reduce((a, b) => a + b, 0);
+  if (cur) need += clue[ci] - cur + (remain.length ? remain.length : 0);
+  else need += Math.max(0, remain.length - 1);
+  return need <= n - k;
+}
+
+// How many pictures fit these clues (stops counting at `cap`).
+function countSolutions(rows, cols, n, cap) {
+  const masks = [];
+  for (let m = 0; m < (1 << n); m++) {
+    const bits = []; for (let j = 0; j < n; j++) bits.push((m >> j) & 1);
+    masks.push(bits);
+  }
+  const opts = rows.map((cl) => masks.filter((b) => sameRuns(runs(b), cl)));
+  const colBits = []; for (let j = 0; j < n; j++) colBits.push([]);
+  let found = 0;
+  (function go(r) {
+    if (found >= cap) return;
+    if (r === n) { for (let j = 0; j < n; j++) if (!sameRuns(runs(colBits[j]), cols[j])) return; found++; return; }
+    for (const b of opts[r]) {
+      let ok = true;
+      for (let j = 0; j < n; j++) colBits[j].push(b[j]);
+      for (let j = 0; j < n && ok; j++) ok = prefixOK(colBits[j], cols[j], n);
+      if (ok) go(r + 1);
+      for (let j = 0; j < n; j++) colBits[j].pop();
+      if (found >= cap) return;
+    }
+  })(0);
+  return found;
+}
+
+// A picture for this seed: filled cells as 1, with clues that only one picture satisfies when we can manage it.
+function makePuzzle(seedStr, n) {
+  const rnd = mulberry32(hashStr('tessera/' + seedStr + '/' + n));
+  let best = null;
+  for (let attempt = 0; attempt < 900; attempt++) {
+    const sym = attempt < 500, g = new Array(n * n).fill(0), p = 0.5 + rnd() * 0.12;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      if (sym && c > (n - 1) / 2) g[r * n + c] = g[r * n + (n - 1 - c)];
+      else g[r * n + c] = rnd() < p ? 1 : 0;
+    }
+    const cl = cluesOf(g, n);
+    if (cl.rows.some((x) => !x.length) || cl.cols.some((x) => !x.length)) continue;
+    const filled = g.reduce((a, b) => a + b, 0);
+    if (filled < n * n * 0.38 || filled > n * n * 0.72) continue;
+    if (!best) best = { grid: g, clues: cl, unique: false };
+    if (countSolutions(cl.rows, cl.cols, n, 2) === 1) return { grid: g, clues: cl, unique: true };
+  }
+  return best;
+}
+
+// Rows and columns whose laid tiles already match their clue.
+function satisfied(state, clues, n) {
+  const rows = [], cols = [];
+  for (let i = 0; i < n; i++) {
+    const row = state.slice(i * n, i * n + n).map((v) => (v === 1 ? 1 : 0));
+    const col = []; for (let r = 0; r < n; r++) col.push(state[r * n + i] === 1 ? 1 : 0);
+    rows.push(sameRuns(runs(row), clues.rows[i]));
+    cols.push(sameRuns(runs(col), clues.cols[i]));
+  }
+  return { rows, cols, all: rows.every(Boolean) && cols.every(Boolean) };
+}
+
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000), p = (x) => String(x).padStart(2, '0');
+  return p(Math.floor(s / 60)) + ':' + p(s % 60);
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { EPOCH, hashStr, mulberry32, dateKey, dayNumber, runs, sameRuns, cluesOf, countSolutions, makePuzzle, satisfied, fmtTime };
+}
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'tessera:v1';
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var $ = function (id) { return document.getElementById(id); };
+  var todayKey = dateKey(new Date()), dayNo = dayNumber(todayKey);
+  var EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  var PALETTES = [
+    ['#b0502f', '#d3a44a', '#2f7d7a', '#efe0bd'],
+    ['#2c4f8f', '#d3a44a', '#efe6d0', '#8a3a2a'],
+    ['#6f8f4e', '#b0502f', '#e3c98a', '#3d5f66'],
+    ['#7a3a58', '#d3a44a', '#3f6f8a', '#e8d9b8']
+  ];
+
+  /* plaster grain, the Greek key band and the logo */
+  try {
+    var g = '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="21"/><feColorMatrix values="0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 0 0.12  0 0 0 0.2 0"/></filter><rect width="240" height="240" filter="url(#g)"/></svg>';
+    document.documentElement.style.setProperty('--grain', 'url("data:image/svg+xml;base64,' + btoa(g) + '")');
+    var k = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M2.5 21.5V2.5H21.5V15.5H8.5V8.5H15.5V12" fill="none" stroke="#8a4a2d" stroke-width="2.6" stroke-linejoin="miter"/></svg>';
+    document.documentElement.style.setProperty('--key', 'url("data:image/svg+xml;base64,' + btoa(k) + '")');
+  } catch (e) {}
+  (function () {
+    var cols = ['#b0502f', '#d3a44a', '#2f7d7a', '#efe0bd'], h = '', r = mulberry32(7);
+    for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) {
+      var on = (i + j) % 2 === 0 || (i === 1 && j === 1);
+      h += '<rect x="' + (3 + j * 14 + r() * 1.5).toFixed(1) + '" y="' + (3 + i * 14 + r() * 1.5).toFixed(1) + '" width="12" height="12" rx="2.4" fill="' + cols[(i * 3 + j) % 4] + '" stroke="rgba(0,0,0,0.5)" stroke-width="0.8" transform="rotate(' + ((r() - 0.5) * 9).toFixed(1) + ')"/>';
+    }
+    $('mark').innerHTML = h;
+  })();
+  (function () {
+    if (reduce) return;
+    var h = '';
+    for (var i = 0; i < 12; i++) { var s = 2 + Math.random() * 2.5; h += '<i style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (35 + Math.random() * 65).toFixed(1) + '%;width:' + s.toFixed(1) + 'px;height:' + s.toFixed(1) + 'px;--t:' + (12 + Math.random() * 12).toFixed(1) + 's;--d:-' + (Math.random() * 20).toFixed(1) + 's;--x:' + (Math.random() * 60 - 30).toFixed(0) + 'px"></i>'; }
+    $('motes').innerHTML = h;
+  })();
+
+  function anim(el, kf, o) {
+    if (reduce || !el || !el.animate) return null;
+    var opt = { duration: 450, easing: EASE, fill: 'backwards' };
+    for (var k in o) opt[k] = o[k];
+    try { return el.animate(kf, opt); } catch (e) { return null; }
+  }
+
+  /* ---------- saved ---------- */
+  function clean(s) {
+    s = s || {};
+    return { played: +s.played || 0, won: +s.won || 0, streak: +s.streak || 0, best: +s.best || 0, lastWin: +s.lastWin || 0, clean: +s.clean || 0, total: +s.total || 0 };
+  }
+  function load() {
+    var o = null;
+    try { var r = localStorage.getItem(KEY); if (r) o = JSON.parse(r); } catch (e) { o = null; }
+    o = (o && typeof o === 'object') ? o : {};
+    return { seen: !!o.seen, sd: clean(o.sd), se: clean(o.se), d: o.d || null, e: o.e || null };
+  }
+  var store = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function newSeed() { return 'r' + Math.random().toString(36).slice(2, 9); }
+
+  /* ---------- state ---------- */
+  var S = { mode: 'daily', n: 7, puz: null, grid: [], tool: 1, ms: 0, t0: 0, checks: 0, done: false, drag: null, focus: 0, pal: 0, seedStr: '' };
+  var timerOn = false, tagTimer = 0, badTimer = 0;
+  function rnd() { return S.mode === 'daily' ? store.d : store.e; }
+  function stats() { return S.mode === 'daily' ? store.sd : store.se; }
+  function elapsed() { return S.ms + (timerOn ? Date.now() - S.t0 : 0); }
+  function startClock() { if (!timerOn && !S.done) { S.t0 = Date.now(); timerOn = true; } }
+  function stopClock() { if (timerOn) { S.ms += Date.now() - S.t0; timerOn = false; } }
+  function save1() { var r = rnd(); if (!r) return; r.g = S.grid.join(''); r.ms = elapsed(); r.checks = S.checks; r.done = S.done; save(); }
+
+  /* ---------- board ---------- */
+  function tileStyle(i, j) {
+    var r = mulberry32(hashStr(S.seedStr + ':' + i + ':' + j)), p = PALETTES[S.pal], c = (S.n - 1) / 2;
+    var ring = Math.max(Math.abs(i - c), Math.abs(j - c)), idx = (Math.round(ring * 2) + (r() < 0.18 ? 1 : 0)) % p.length;
+    var rad = [4 + r() * 5, 4 + r() * 6, 4 + r() * 5, 4 + r() * 6].map(function (v) { return v.toFixed(1) + 'px'; }).join(' ');
+    return { fin: p[idx], css: '--rot:' + ((r() - 0.5) * 5).toFixed(1) + 'deg;--sc:' + (0.93 + r() * 0.07).toFixed(2) + ';--rad:' + rad + ';--ins:' + (2 + r() * 2.5).toFixed(1) + 'px;--ang:' + Math.round(110 + r() * 80) + 'deg;--cx:' + Math.round(15 + r() * 50) + '%;--cy:' + Math.round(15 + r() * 40) + '%;--fx:' + Math.round(20 + r() * 60) + '%;--fy:' + Math.round(20 + r() * 60) + '%;--fin:' + p[idx] };
+  }
+  function buildField() {
+    var n = S.n, cl = S.puz.clues, h = '<span class="corner"></span>';
+    for (var j = 0; j < n; j++) h += '<div class="cc" data-c="' + j + '" style="grid-column:' + (j + 2) + ';grid-row:1">' + cl.cols[j].map(function (v) { return '<b>' + v + '</b>'; }).join('') + '</div>';
+    for (var i = 0; i < n; i++) h += '<div class="rc" data-r="' + i + '" style="grid-column:1;grid-row:' + (i + 2) + '">' + cl.rows[i].map(function (v) { return '<b>' + v + '</b>'; }).join('') + '</div>';
+    h += '<div class="pits" id="pits" role="grid">';
+    for (var k = 0; k < n * n; k++) h += '<button type="button" class="cell" data-k="' + k + '" tabindex="' + (k === 0 ? 0 : -1) + '" role="gridcell"></button>';
+    h += '</div>';
+    $('field').innerHTML = h;
+    $('field').style.setProperty('--n', n); $('work').style.setProperty('--n', n);
+    var cells = $('pits').children;
+    for (var q = 0; q < cells.length; q++) { var st = tileStyle(Math.floor(q / n), q % n); cells[q].setAttribute('style', st.css); cells[q]._fin = st.fin; }
+  }
+  function cellEl(k) { return $('pits').children[k]; }
+  function drawCell(k) {
+    var el = cellEl(k), v = S.grid[k], n = S.n, i = Math.floor(k / n), j = k % n;
+    el.innerHTML = v === 1 ? '<span class="tl" style="--col:' + (S.done ? el._fin : '#b8ad98') + '"></span>' : (v === 2 ? '<svg class="gap" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3L17 17M17 3L3 17" pathLength="1"/></svg>' : '');
+    el.setAttribute('aria-label', 'Row ' + (i + 1) + ', column ' + (j + 1) + ', ' + (v === 1 ? 'tile' : v === 2 ? 'gap' : 'empty'));
+  }
+  function drawAll() { for (var k = 0; k < S.n * S.n; k++) drawCell(k); refreshClues(false); }
+  function refreshClues(animate) {
+    var sat = satisfied(S.grid, S.puz.clues, S.n), cc = $('field').querySelectorAll('.cc'), rc = $('field').querySelectorAll('.rc');
+    for (var i = 0; i < S.n; i++) { cc[i].classList.toggle('ok', sat.cols[i]); rc[i].classList.toggle('ok', sat.rows[i]); }
+    return sat;
+  }
+  function hotClues(k) {
+    var n = S.n, r = Math.floor(k / n), c = k % n, cc = $('field').querySelectorAll('.cc'), rc = $('field').querySelectorAll('.rc');
+    for (var i = 0; i < n; i++) { cc[i].classList.toggle('hot', k >= 0 && i === c); rc[i].classList.toggle('hot', k >= 0 && i === r); }
+  }
+
+  /* ---------- play ---------- */
+  function setCell(k, v, instant) {
+    if (S.grid[k] === v) return;
+    var was = S.grid[k]; S.grid[k] = v; drawCell(k);
+    var el = cellEl(k), t = el.querySelector('.tl'), gp = el.querySelector('.gap');
+    if (t) anim(t, [{ transform: 'rotate(' + (-8) + 'deg) scale(1.5) translateY(-10px)', opacity: 0 }, { transform: 'rotate(var(--rot)) scale(0.94)', opacity: 1, offset: 0.7 }, { transform: 'rotate(var(--rot)) scale(var(--sc))', opacity: 1 }], { duration: 380 });
+    if (gp) anim(gp.firstElementChild, [{ strokeDasharray: '1', strokeDashoffset: 1 }, { strokeDasharray: '1', strokeDashoffset: 0 }], { duration: 320 });
+    if (!t && was === 1) { /* tile lifted out */ }
+  }
+  function applyAt(k, v) {
+    if (S.done || k == null) return;
+    startClock();
+    var before = satisfied(S.grid, S.puz.clues, S.n);
+    setCell(k, v);
+    var sat = refreshClues(true), n = S.n;
+    if (sat.rows[Math.floor(k / n)] && !before.rows[Math.floor(k / n)]) anim($('field').querySelectorAll('.rc')[Math.floor(k / n)], [{ transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 450 });
+    if (sat.cols[k % n] && !before.cols[k % n]) anim($('field').querySelectorAll('.cc')[k % n], [{ transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 450 });
+    updateCoach(sat); save1();
+    if (sat.all) win();
+  }
+  function actionFor(k, tool) { var v = S.grid[k]; return v === tool ? 0 : tool; }
+  var dragCells = null;
+  function down(e) {
+    var b = e.target.closest ? e.target.closest('.cell') : null; if (!b || S.done) return;
+    if (e.button === 2) return;
+    e.preventDefault();
+    var k = +b.getAttribute('data-k'), tool = (e.shiftKey ? 2 : S.tool);
+    S.drag = { v: actionFor(k, tool), tool: tool, r: Math.floor(k / S.n), c: k % S.n, axis: null, last: k, moved: false };
+    S.focus = k; moveFocus(k, true); hotClues(k);
+    applyAt(k, S.drag.v);
+  }
+  function move(e) {
+    if (!S.drag) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY), b = el && el.closest ? el.closest('.cell') : null; if (!b) return;
+    var k = +b.getAttribute('data-k'); if (k === S.drag.last) return;
+    var r = Math.floor(k / S.n), c = k % S.n;
+    if (!S.drag.axis) S.drag.axis = (r === S.drag.r) ? 'r' : (c === S.drag.c ? 'c' : null);
+    if ((S.drag.axis === 'r' && r !== S.drag.r) || (S.drag.axis === 'c' && c !== S.drag.c) || !S.drag.axis) return;
+    S.drag.last = k; S.drag.moved = true; hotClues(k);
+    var cur = S.grid[k];
+    if (S.drag.v === 0) { if (cur === S.drag.tool) applyAt(k, 0); }
+    else if (cur === 0) applyAt(k, S.drag.v);
+  }
+  function up() { S.drag = null; }
+  document.addEventListener('pointerdown', function (e) { if (e.target.closest && e.target.closest('#pits')) down(e); });
+  document.addEventListener('pointermove', move);
+  document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+  document.addEventListener('contextmenu', function (e) { var b = e.target.closest && e.target.closest('.cell'); if (b) { e.preventDefault(); if (!S.done) { var k = +b.getAttribute('data-k'); applyAt(k, actionFor(k, 2)); } } });
+  function moveFocus(k, noFocus) {
+    var cells = $('pits').children; for (var i = 0; i < cells.length; i++) { cells[i].tabIndex = i === k ? 0 : -1; cells[i].classList.toggle('sel', false); }
+    if (!noFocus) { cells[k].focus({ preventScroll: true }); hotClues(k); }
+  }
+  $('pits') && 0;
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('ov').hidden) { if (e.key === 'Escape') closeHow(); return; }
+    var inGrid = e.target.classList && e.target.classList.contains('cell');
+    if (inGrid) {
+      var k = +e.target.getAttribute('data-k'), n = S.n, r = Math.floor(k / n), c = k % n, nk = k;
+      if (e.key === 'ArrowRight') nk = r * n + Math.min(n - 1, c + 1); else if (e.key === 'ArrowLeft') nk = r * n + Math.max(0, c - 1);
+      else if (e.key === 'ArrowDown') nk = Math.min(n - 1, r + 1) * n + c; else if (e.key === 'ArrowUp') nk = Math.max(0, r - 1) * n + c;
+      else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); applyAt(k, actionFor(k, S.tool)); return; }
+      else if (e.key === 'x' || e.key === 'X') { e.preventDefault(); applyAt(k, actionFor(k, 2)); return; }
+      else return;
+      e.preventDefault(); moveFocus(nk);
+    } else if (e.key === 't' || e.key === 'T') setTool(S.tool === 1 ? 2 : 1);
+  });
+  function setTool(t) {
+    S.tool = t; $('tLay').setAttribute('aria-pressed', t === 1); $('tGap').setAttribute('aria-pressed', t === 2);
+  }
+  $('tLay').addEventListener('click', function () { setTool(1); }); $('tGap').addEventListener('click', function () { setTool(2); });
+
+  function updateCoach(sat) {
+    if (S.done) return;
+    var tiles = S.grid.filter(function (v) { return v === 1; }).length, c = $('coach');
+    var okr = sat.rows.filter(Boolean).length, okc = sat.cols.filter(Boolean).length, n = S.n;
+    if (tiles === 0) c.innerHTML = '<b>Fill the grid to match the numbers</b><span>A 3 means three tiles in a row in that line. Tap a square to place a tile.</span>';
+    else c.innerHTML = '<b>' + (okr + okc) + ' of ' + (n * 2) + ' numbers done</b><span>A number gets crossed out when its line is right.</span>';
+    $('checkn').textContent = S.checks ? S.checks + (S.checks === 1 ? ' check used' : ' checks used') : '';
+  }
+  function check() {
+    if (S.done) return;
+    startClock();
+    var bad = [];
+    for (var k = 0; k < S.n * S.n; k++) { var v = S.grid[k], s = S.puz.grid[k]; if ((v === 1 && s !== 1) || (v === 2 && s === 1)) bad.push(k); }
+    S.checks++; save1();
+    clearTimeout(badTimer);
+    var els = [];
+    bad.forEach(function (k) { var el = cellEl(k); el.classList.add('bad'); els.push(el); });
+    badTimer = setTimeout(function () { els.forEach(function (el) { el.classList.remove('bad'); }); }, 2500);
+    var c = $('coach');
+    c.innerHTML = bad.length ? '<b>' + bad.length + (bad.length === 1 ? ' mistake' : ' mistakes') + '</b><span>The red squares are wrong.</span>' : '<b>No mistakes</b><span>Everything you have placed so far is right.</span>';
+    anim(c, [{ opacity: 0.2, transform: 'translateX(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 500 });
+    $('checkn').textContent = S.checks + (S.checks === 1 ? ' check used' : ' checks used');
+  }
+  function clearAll() {
+    if (S.done) return;
+    for (var k = 0; k < S.n * S.n; k++) if (S.grid[k]) S.grid[k] = 0;
+    drawAll(); updateCoach(satisfied(S.grid, S.puz.clues, S.n)); save1();
+    anim($('pits'), [{ opacity: 0.4 }, { opacity: 1 }], { duration: 400 });
+  }
+  $('check').addEventListener('click', check); $('clear').addEventListener('click', clearAll);
+
+  /* ---------- finishing ---------- */
+  function win() {
+    stopClock(); S.done = true;
+    var ms = S.ms, st = stats();
+    st.played++; st.won++; st.total += ms; if (!st.best || ms < st.best) st.best = ms; if (!S.checks) st.clean++;
+    if (S.mode === 'daily') { st.streak = (st.lastWin === dayNo - 1 || st.lastWin === dayNo) ? st.streak + 1 : 1; st.lastWin = dayNo; } else st.streak++;
+    save1(); save();
+    $('bed').classList.add('done'); $('field').classList.add('done');
+    var n = S.n, c = (n - 1) / 2;
+    for (var k = 0; k < n * n; k++) if (S.grid[k] === 2) { S.grid[k] = 0; drawCell(k); }
+    for (var q = 0; q < n * n; q++) {
+      if (S.grid[q] !== 1) continue;
+      var el = cellEl(q), t = el.querySelector('.tl'); if (!t) continue;
+      var i = Math.floor(q / n), j = q % n, d = Math.hypot(i - c, j - c);
+      t.style.transitionDelay = reduce ? '0ms' : (400 + d * 110) + 'ms'; t.style.setProperty('--col', el._fin);
+      anim(t, [{ transform: 'rotate(var(--rot)) scale(var(--sc))' }, { transform: 'rotate(var(--rot)) scale(1.12)', offset: 0.5 }, { transform: 'rotate(var(--rot)) scale(var(--sc))' }], { duration: 600, delay: 400 + d * 110, fill: 'none' });
+    }
+    $('coach').innerHTML = '<b>Solved</b><span>Every number is crossed out.</span>';
+    hotClues(-1);
+    $('tools').hidden = true;
+    clearTimeout(tagTimer); tagTimer = setTimeout(function () { showPlaque(false); renderRecord(); }, reduce ? 0 : 1900 + n * 150);
+  }
+  function showPlaque(instant) {
+    var pl = $('plaque'), ms = S.ms, tx = 'TESSERA ' + (S.mode === 'daily' ? 'No. ' + dayNo : 'Endless') + '  ' + S.n + '×' + S.n + '\n' + fmtTime(ms) + (S.checks ? ' · ' + S.checks + (S.checks === 1 ? ' check' : ' checks') : ' · no checks');
+    pl.innerHTML = '<h2>Solved</h2><p>' + (S.checks === 0 ? 'No checks used.' : 'Nice work.') + '</p>' +
+      '<div class="stats"><div><b>' + fmtTime(ms) + '</b><span>Time</span></div><div><b>' + S.checks + '</b><span>Checks</span></div><div><b>' + S.n + '×' + S.n + '</b><span>Size</span></div></div>' +
+      '<div class="foot"><button type="button" class="btn" id="copy">Copy result</button>' +
+      (S.mode === 'daily' ? '<button type="button" class="btn dark" id="toEnd">Play endless</button>' : '<button type="button" class="btn hot" id="nextM">Next mosaic</button><button type="button" class="btn dark" id="toDaily">Back to daily</button>') +
+      '</div>' + (S.mode === 'daily' ? '<p class="next" id="nextin"></p>' : '');
+    pl.hidden = false;
+    $('copy').addEventListener('click', function () {
+      var b = this, done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy result'; }, 1600); };
+      try { navigator.clipboard.writeText(tx).then(done, function () { fallbackCopy(tx); done(); }); } catch (e) { fallbackCopy(tx); done(); }
+    });
+    var te = $('toEnd'); if (te) te.addEventListener('click', function () { go('endless'); });
+    var nm = $('nextM'); if (nm) nm.addEventListener('click', function () { store.e = null; init('endless'); });
+    var td = $('toDaily'); if (td) td.addEventListener('click', function () { go('daily'); });
+    tick();
+    if (!instant) {
+      if (window.innerWidth <= 900 && !reduce) { try { pl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+      anim(pl, [{ opacity: 0, transform: 'translateY(-24px) scale(0.96)' }, { opacity: 1, transform: 'translateY(3px) scale(1.01)', offset: 0.7 }, { opacity: 1, transform: 'none' }], { duration: 800 });
+    }
+  }
+  function fallbackCopy(t) { var a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(a); }
+  function renderRecord() {
+    var st = stats();
+    $('recT').textContent = 'Record · ' + (S.mode === 'daily' ? 'Daily' : 'Endless');
+    $('nums').innerHTML = '<div><b>' + st.won + '</b><span>Solved</span></div><div><b>' + st.streak + '</b><span>Streak</span></div><div><b>' + (st.best ? fmtTime(st.best) : '–') + '</b><span>Best time</span></div><div><b>' + st.clean + '</b><span>No checks</span></div>';
+  }
+
+  /* ---------- modes ---------- */
+  function init(mode) {
+    S.mode = mode; clearTimeout(tagTimer); clearTimeout(badTimer); stopClock();
+    $('tabs').setAttribute('data-m', mode);
+    $('mDaily').setAttribute('aria-pressed', mode === 'daily'); $('mEndless').setAttribute('aria-pressed', mode === 'endless');
+    var r = rnd(), n;
+    if (mode === 'daily') {
+      if (!r || r.key !== todayKey) { store.d = r = { key: todayKey, g: '', ms: 0, checks: 0, done: false }; save(); }
+      S.seedStr = todayKey; n = 5;
+    } else {
+      if (!r || !r.seed) { var sd = newSeed(); store.e = r = { seed: sd, n: 5 + (hashStr(sd) % 2), g: '', ms: 0, checks: 0, done: false }; save(); }
+      S.seedStr = r.seed; n = r.n || 6;
+    }
+    S.n = n; S.puz = makePuzzle(S.seedStr, n); S.pal = hashStr('pal' + S.seedStr) % PALETTES.length;
+    var g = (r.g && r.g.length === n * n) ? r.g.split('').map(Number) : new Array(n * n).fill(0);
+    S.grid = g; S.ms = +r.ms || 0; S.checks = +r.checks || 0; S.done = !!r.done; timerOn = false; S.focus = 0;
+    $('sub').textContent = mode === 'daily' ? 'No. ' + dayNo + ' · ' + new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Endless · ' + n + ' by ' + n;
+    $('bed').classList.toggle('done', S.done); $('field').classList.toggle('done', S.done);
+    buildField(); drawAll(); setTool(1);
+    $('plaque').hidden = true; $('tools').hidden = S.done;
+    $('time').textContent = fmtTime(S.ms); $('checkn').textContent = S.checks ? S.checks + (S.checks === 1 ? ' check used' : ' checks used') : '';
+    if (S.done) { $('coach').innerHTML = '<b>Solved</b><span>Every number is crossed out.</span>'; showPlaque(true); }
+    else updateCoach(satisfied(S.grid, S.puz.clues, S.n));
+    renderRecord();
+    anim($('bed'), [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 700 });
+    var cells = $('pits').children;
+    for (var k = 0; k < cells.length; k++) { var t = cells[k].querySelector('.tl'); anim(t || cells[k], [{ opacity: 0, transform: t ? 'scale(0.6)' : 'scale(0.9)' }, { opacity: 1, transform: 'none' }], { duration: 500, delay: 150 + (Math.floor(k / n) + k % n) * 35, fill: 'backwards' }); }
+  }
+  function go(m) { init(m); try { location.hash = m; } catch (e) {} }
+  window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if ((h === 'daily' || h === 'endless') && h !== S.mode) init(h); });
+  $('mDaily').addEventListener('click', function () { go('daily'); });
+  $('mEndless').addEventListener('click', function () { go('endless'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { if (timerOn) { stopClock(); save1(); } } else if (!S.done && S.grid.some(function (v) { return v; })) startClock(); });
+  window.addEventListener('pagehide', function () { if (!S.done) { stopClock(); save1(); } });
+
+  /* ---------- how to play ---------- */
+  function howHtml() {
+    var cells = [0, 1, 0, 1, 1, 1, 0, 1, 0], pal = PALETTES[0], fin = [null, pal[0], null, pal[1], pal[2], pal[3], null, pal[0], null], ord = [0, 0, 0, 1, 0, 0, 0, 0, 0];
+    var starts = { 4: 8, 3: 14, 5: 20, 1: 36, 7: 44 }, r = mulberry32(3);
+    var css = '';
+    Object.keys(starts).forEach(function (k) {
+      var a = starts[k], f = function (x) { return (+x).toFixed(1) + '%'; };
+      css += '@keyframes dl' + k + ' { 0%, ' + f(a - 1) + ' { opacity: 0; transform: scale(1.5) translateY(-10px) rotate(var(--rot)); } ' + f(a + 3) + ' { opacity: 1; transform: scale(0.95) rotate(var(--rot)); } ' + f(a + 5) + ', 94% { opacity: 1; transform: scale(1) rotate(var(--rot)); } 98%, 100% { opacity: 0; transform: scale(1) rotate(var(--rot)); } }';
+    });
+    var h = '<style>' + css + '</style><h2 id="howT">How to play</h2><p class="lead">Place tiles so every row and column matches its number.</p><div class="demo"><span></span>';
+    [1, 3, 1].forEach(function (v, i) { h += '<div class="cc' + (i === 1 ? ' d2' : '') + '" style="grid-column:' + (i + 2) + ';grid-row:1"><b>' + v + '</b></div>'; });
+    [1, 3, 1].forEach(function (v, i) { h += '<div class="rc' + (i === 1 ? ' d1' : '') + '" style="grid-column:1;grid-row:' + (i + 2) + '"><b>' + v + '</b></div>'; });
+    h += '<div class="pits">';
+    cells.forEach(function (v, k) {
+      var sty = '--rot:' + ((r() - 0.5) * 5).toFixed(1) + 'deg;--rad:6px;--ins:3px;--ang:140deg;--cx:30%;--cy:30%;--fx:60%;--fy:60%;';
+      h += '<span class="cell" style="' + sty + '">';
+      if (v) h += '<span class="tl" style="--s:' + starts[k] + '%;--fin:' + fin[k] + ';animation-name:dl' + k + ',dcol"></span>';
+      else h += '<svg class="gap" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3L17 17M17 3L3 17" pathLength="1"/></svg>';
+      h += '</span>';
+    });
+    h += '</div></div>';
+    h += '<ol><li><span><b>Read the numbers.</b> A number says how many tiles go in a row in that line. <b>3</b> means three tiles side by side.</span></li>' +
+      '<li><span><b>Tap to place tiles.</b> Tap a square to place a tile, tap again to remove it. Use <b>Empty</b> to mark squares that stay blank.</span></li>' +
+      '<li><span><b>Cross out every number.</b> A number is crossed out when its line is right. Do them all to win.</span></li></ol>';
+    h += '<div class="foot"><p>Daily: same puzzle for everyone. Endless: a new one every time.</p><button type="button" class="btn hot" id="howGo">Got it</button></div>';
+    return h;
+  }
+  function openHow() {
+    $('how').innerHTML = howHtml(); $('ov').hidden = false; store.seen = true; save();
+    $('howGo').addEventListener('click', closeHow); $('howGo').focus({ preventScroll: true });
+  }
+  function closeHow() {
+    var ov = $('ov');
+    function fin() { ov.hidden = true; $('how').innerHTML = ''; try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {} }
+    var a = anim(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    if (a) a.onfinish = function () { a.cancel(); fin(); }; else fin();
+  }
+  $('helpBtn').addEventListener('click', openHow);
+  $('ov').addEventListener('click', function (e) { if (e.target === $('ov')) closeHow(); });
+
+  /* ---------- clock ---------- */
+  function tick() {
+    var now = new Date(), k = dateKey(now);
+    if (k !== todayKey) { todayKey = k; dayNo = dayNumber(k); store.d = null; save(); if (S.mode === 'daily') init('daily'); return; }
+    if (timerOn) $('time').textContent = fmtTime(elapsed());
+    var el = $('nextin'); if (!el) return;
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), s = Math.max(0, Math.floor((next - now) / 1000)), p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = 'Next mosaic in ' + p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+  }
+  setInterval(tick, 500);
+
+  var h0 = location.hash.replace('#', '');
+  init(h0 === 'endless' ? 'endless' : 'daily');
+  if (!store.seen) setTimeout(function () { if (!store.seen) openHow(); }, 350);
+})();
+</script>

@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<title>Departures</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: the concourse of a railway station. The wall behind is glossy green tile. A blue enamel sign says
+   DEPARTURES next to a round station clock that shows your real time. The board is a black split-flap
+   display: each train is a row with its destination and two flaps (platform, time) that flip when tapped.
+   Beside it (under it on a phone) a white enamel plaque lists the notices, which are the clues.
+   When every flap is right the rows turn green, the banner says ALL ABOARD and a train rolls through. */
+:root {
+  --tile: #123f38; --tile2: #0b2b27; --enamel: #0f4c9a; --enamel2: #0a3571; --flap: #15161b; --flap2: #0b0c10; --paper: #f4f0e4; --ink: #1d2128; --amber: #ffb81c; --red: #d6402b; --ok: #46b36f; --white: #f4f1e6;
+  --ch: 56px;
+  --sans: 'Barlow', 'Helvetica Neue', Arial, sans-serif; --cond: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif; --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); --grain: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { background: var(--tile2); }
+body {
+  margin: 0; min-height: 100dvh; color: var(--white); font: 500 17px/1.45 var(--sans); position: relative; overflow-x: clip;
+  background:
+    var(--grain),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 18%, transparent 60%, rgba(0, 0, 0, 0.35)),
+    linear-gradient(rgba(0, 0, 0, 0.4) 0 2px, transparent 2px) 0 0 / 100% 34px,
+    linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0 2px, transparent 2px) 0 0 / 68px 100%,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px) 34px 17px / 68px 34px,
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.07), transparent 70%),
+    var(--tile);
+  padding-block: 0 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 14px; z-index: 5; pointer-events: none; background: repeating-linear-gradient(135deg, #f2c200 0 14px, #1a1a1a 14px 28px); box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.5); }
+h1, h2, h3, p, ol { margin: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding-bottom: 56px; }
+
+/* ---------- top ---------- */
+.top { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 22px; padding: 22px 0 20px; }
+.sign { position: relative; display: flex; flex-direction: column; padding: 10px 28px 10px 22px; color: #fff; background: var(--grain), linear-gradient(var(--enamel), var(--enamel2)); border-radius: 6px; box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--enamel2), 0 12px 18px -6px rgba(0, 0, 0, 0.7), inset 0 2px 0 rgba(255, 255, 255, 0.25); }
+.sign h1 { font: 700 clamp(1.8rem, 4.6vw, 2.6rem)/1 var(--cond); letter-spacing: 0.08em; text-transform: uppercase; }
+.sign p { font: 500 0.82rem/1.2 var(--cond); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; margin-top: 4px; }
+.clock { width: 66px; height: 66px; flex: none; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.6)); }
+.tools { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+.tabs, .sizes { display: flex; }
+.tabs button, .sizes button { cursor: pointer; padding: 9px 18px; font: 600 0.98rem/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: #cfe3de; background: rgba(0, 0, 0, 0.35); border: 1.5px solid rgba(255, 255, 255, 0.3); transition: background 0.35s var(--ease), color 0.35s; }
+.tabs button:first-child, .sizes button:first-child { border-radius: 6px 0 0 6px; } .tabs button:last-child, .sizes button:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
+.sizes button { padding: 9px 12px; } .sizes button:not(:first-child) { border-left: 0; }
+.tabs button[aria-pressed="true"], .sizes button[aria-pressed="true"] { background: var(--amber); color: #1a1405; border-color: var(--amber); }
+.help { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font: 700 1.15rem/1 var(--cond); color: #fff; background: var(--enamel); border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); transition: transform 0.35s var(--ease); }
+.help:hover { transform: scale(1.1) rotate(8deg); }
+
+/* ---------- layout ---------- */
+.work { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: clamp(22px, 3.2vw, 44px); align-items: start; }
+.left, .right { display: grid; gap: 18px; min-width: 0; }
+
+/* ---------- split-flap board ---------- */
+.board { position: relative; padding: 14px clamp(10px, 2vw, 18px) 12px; border-radius: 8px; background: var(--grain), linear-gradient(160deg, #26272d, #0e0f13 70%); box-shadow: 0 0 0 2px #050506, 0 0 0 4px #4b4f57, inset 0 2px 0 rgba(255, 255, 255, 0.12), 0 24px 36px -12px rgba(0, 0, 0, 0.85); }
+.board::before, .board::after { content: ""; position: absolute; top: 9px; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #9a9ea6, #2b2d33 70%); box-shadow: 0 1px 1px #000; }
+.board::before { left: 8px; } .board::after { right: 8px; }
+.bh { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 12px 10px; }
+.bh b { font: 700 1.25rem/1 var(--cond); letter-spacing: 0.22em; text-transform: uppercase; color: var(--amber); }
+.lamp { display: inline-flex; align-items: center; gap: 8px; font: 500 0.82rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: #a9aeb7; }
+.lamp i { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px var(--amber); animation: blink 1.6s steps(2) infinite; }
+.board.won .lamp i { background: var(--ok); box-shadow: 0 0 10px var(--ok); animation: none; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.cols, .row { display: grid; grid-template-columns: minmax(0, 1fr) 58px minmax(0, 112px); gap: 8px; align-items: stretch; }
+.cols { padding: 0 0 6px; font: 600 0.72rem/1 var(--cond); letter-spacing: 0.2em; text-transform: uppercase; color: #8b909a; } .cols span:not(:first-child) { text-align: center; }
+.row { margin-top: 8px; position: relative; }
+.name { display: flex; align-items: center; padding: 0 14px; height: var(--ch); border-radius: 5px; background: linear-gradient(var(--flap), var(--flap2)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 -3px 5px rgba(0, 0, 0, 0.5); font: 600 clamp(1.25rem, 5vw, 1.9rem)/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; }
+.name::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #000; opacity: 0.55; }
+.row.ok .name { color: #aaf0c4; }
+.fbtn { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 5px; -webkit-tap-highlight-color: transparent; }
+.fbtn:hover .h { filter: brightness(1.25); }
+.fl { display: block; position: relative; height: var(--ch); perspective: 400px; }
+.fl::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: #000; z-index: 5; opacity: 0.9; pointer-events: none; }
+.h { display: block; position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; background: linear-gradient(var(--flap), #1d1e24); backface-visibility: hidden; }
+.h span { display: block; position: absolute; left: 0; right: 0; height: var(--ch); line-height: var(--ch); text-align: center; font: 600 clamp(1.5rem, 6vw, 2.1rem)/var(--ch) var(--mono); color: var(--white); }
+.t, .ft { top: 0; border-radius: 5px 5px 0 0; transform-origin: 50% 100%; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+.b, .fb { bottom: 0; border-radius: 0 0 5px 5px; transform-origin: 50% 0; background: linear-gradient(#0e0f13, var(--flap)); box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.5); }
+.b span, .fb span { top: calc(var(--ch) / -2); }
+.ft { z-index: 3; display: none; } .fb { z-index: 2; display: none; }
+.fbtn.sel .h { box-shadow: inset 0 0 0 2px var(--amber); }
+.fbtn.lock .h span { color: #e8c15a; }
+.fbtn.lock { box-shadow: 0 0 0 2px #8a6a1c; }
+.fbtn.dupe .h span { color: var(--amber); }
+.fbtn.blank .h span { color: #4a4e57; }
+.row.ok .fbtn .h span { color: #aaf0c4; }
+.bf { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 12px 0; color: #a9aeb7; font: 500 0.95rem/1.3 var(--sans); }
+.bf b { color: #fff; font-weight: 600; }
+.track { position: relative; height: 38px; margin-top: 12px; overflow: hidden; border-radius: 4px; background: linear-gradient(#1d1f24, #121317); }
+.track::before { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 4px; background: #6b6f77; box-shadow: 0 10px 0 -1px #43464c; }
+.train { position: absolute; bottom: 10px; left: 0; width: 150px; transform: translateX(-170px); }
+.board.won .train { animation: roll 3.4s cubic-bezier(0.4, 0, 0.3, 1) 0.6s both; }
+@keyframes roll { from { transform: translateX(-170px); } to { transform: translateX(calc(100vw + 30px)); } }
+
+/* ---------- plaque (clues) ---------- */
+.plaque { position: relative; padding: 18px 18px 14px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #fbf8ee, var(--paper)); border-radius: 8px; box-shadow: 0 0 0 3px #fff, 0 0 0 6px #b9b4a4, 0 18px 26px -10px rgba(0, 0, 0, 0.8); }
+.plaque h2 { display: flex; align-items: center; gap: 10px; font: 700 1.4rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: var(--enamel); padding-bottom: 10px; border-bottom: 3px solid var(--enamel); }
+.plaque h2 small { margin-left: auto; font: 500 0.78rem/1 var(--cond); letter-spacing: 0.14em; color: #6b6f77; }
+.notes { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; counter-reset: n; }
+.notes li { counter-increment: n; }
+.notes button { width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; text-align: left; cursor: pointer; padding: 9px 10px; border-radius: 6px; border: 0; background: rgba(15, 76, 154, 0.07); font: 500 1rem/1.35 var(--sans); color: var(--ink); transition: background 0.3s, opacity 0.3s; }
+.notes button:hover { background: rgba(15, 76, 154, 0.14); }
+.notes button::before { content: counter(n); width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--enamel); color: #fff; font: 700 1.05rem/1 var(--cond); transition: background 0.3s; }
+.notes span { background: linear-gradient(currentColor, currentColor) 0 55% / 0% 2px no-repeat; transition: background-size 0.5s var(--ease); }
+.notes button.done { opacity: 0.5; } .notes button.done::before { background: var(--ok); content: "✓"; } .notes button.done span { background-size: 100% 2px; }
+.acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { white-space: nowrap; cursor: pointer; padding: 12px 18px; border-radius: 6px; border: 0; font: 700 1rem/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: #1a1405; background: linear-gradient(#ffd25a, var(--amber)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 4px 0 #a97400, 0 8px 12px rgba(0, 0, 0, 0.4); transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), opacity 0.3s; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); } .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #a97400; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn.dark { color: #e3efec; background: rgba(0, 0, 0, 0.35); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.35); }
+.btn.blue { color: #fff; background: linear-gradient(#2a6fcb, var(--enamel)); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 4px 0 var(--enamel2), 0 8px 12px rgba(0, 0, 0, 0.4); }
+.btn.ghost { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 1.5px rgba(29, 33, 40, 0.5); }
+.meter { display: flex; align-items: baseline; gap: 16px; font: 600 1.7rem/1 var(--mono); font-variant-numeric: tabular-nums; margin-left: auto; align-self: center; }
+.meter small { font: 500 0.82rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: #a9c3bd; }
+.msg { min-height: 1.5em; font: 600 1.05rem/1.4 var(--cond); letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); }
+.slip { position: relative; padding: 22px 22px 20px; text-align: center; color: var(--ink); background: var(--grain), linear-gradient(160deg, #fbf8ee, var(--paper)); border-radius: 8px; box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--ok), 0 18px 28px -10px rgba(0, 0, 0, 0.8); }
+.slip.lost { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #8a8f98, 0 18px 28px -10px rgba(0, 0, 0, 0.8); }
+.slip h2 { font: 700 2rem/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: #1d7a45; }
+.slip.lost h2 { color: #5d626b; }
+.slip p { margin-top: 6px; }
+.slip .stats { display: flex; justify-content: center; gap: 26px; margin: 14px 0 4px; }
+.slip .stats div { display: grid; gap: 3px; } .slip .stats b { font: 600 1.7rem/1 var(--mono); font-variant-numeric: tabular-nums; } .slip .stats span { font: 600 0.72rem/1 var(--cond); letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
+.slip .foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.slip .next { margin-top: 12px; font: 600 0.82rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.record h3 { font: 600 0.8rem/1 var(--cond); letter-spacing: 0.22em; text-transform: uppercase; color: #a9c3bd; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.25); margin-bottom: 12px; }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.nums div { display: grid; gap: 4px; } .nums b { font: 600 1.55rem/1 var(--mono); font-variant-numeric: tabular-nums; } .nums span { font: 600 0.72rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: #a9c3bd; }
+
+/* ---------- how to play ---------- */
+.overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 14px max(14px, env(safe-area-inset-left, 0px)); background: rgba(4, 18, 16, 0.82); animation: fadein 0.3s ease-out both; }
+@keyframes fadein { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(22px) scale(0.97); } }
+.how { --loop: 14s; width: 100%; max-width: 480px; max-height: 100%; overflow: auto; padding: 24px 22px 20px; display: grid; gap: 14px; color: var(--ink); background: var(--grain), linear-gradient(160deg, #fbf8ee, var(--paper)); border-radius: 8px; box-shadow: 0 0 0 3px #fff, 0 0 0 6px #b9b4a4, 0 30px 70px -10px rgba(0, 0, 0, 0.9); animation: rise 0.7s var(--ease) both; }
+.how h2 { font: 700 1.7rem/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--enamel); }
+.how .lead { margin-top: -6px; opacity: 0.85; }
+.demo { display: grid; gap: 10px; padding: 12px; background: linear-gradient(160deg, #26272d, #0e0f13); border-radius: 8px; color: var(--white); }
+.dn { display: grid; gap: 6px; }
+.dn p { position: relative; padding: 8px 10px 8px 12px; border-radius: 5px; font: 500 0.92rem/1.3 var(--sans); color: var(--ink); background: var(--paper); }
+.dn p:nth-child(1) { animation: hl1 var(--loop) infinite; } .dn p:nth-child(2) { animation: hl2 var(--loop) infinite; }
+.dn p span { background: linear-gradient(currentColor, currentColor) 0 55% / 0% 2px no-repeat; } .dn p:nth-child(1) span { animation: st1 var(--loop) infinite; } .dn p:nth-child(2) span { animation: st2 var(--loop) infinite; }
+@keyframes hl1 { 0%, 3% { background: var(--paper); } 6%, 14% { background: #ffe38a; } 18%, 94% { background: var(--paper); opacity: 0.55; } 100% { background: var(--paper); opacity: 1; } }
+@keyframes hl2 { 0%, 33% { background: var(--paper); } 36%, 44% { background: #ffe38a; } 48%, 94% { background: var(--paper); opacity: 0.55; } 100% { background: var(--paper); opacity: 1; } }
+@keyframes st1 { 0%, 17% { background-size: 0% 2px; } 22%, 94% { background-size: 100% 2px; } 100% { background-size: 0% 2px; } }
+@keyframes st2 { 0%, 47% { background-size: 0% 2px; } 52%, 94% { background-size: 100% 2px; } 100% { background-size: 0% 2px; } }
+.drow { display: grid; grid-template-columns: minmax(0, 1fr) 46px 86px; gap: 6px; }
+.dname { display: flex; align-items: center; padding: 0 10px; height: 42px; border-radius: 4px; background: var(--flap); font: 600 1.15rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; }
+.df { position: relative; height: 42px; perspective: 300px; }
+.df span { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 4px; background: var(--flap); font: 600 1.2rem/1 var(--mono); backface-visibility: hidden; }
+.df span::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #000; }
+.df .o { color: #4a4e57; } .df .nw { color: var(--white); }
+.df.a .o { animation: fo1 var(--loop) infinite; } .df.a .nw { animation: fn1 var(--loop) infinite; }
+.df.b .o { animation: fo2 var(--loop) infinite; } .df.b .nw { animation: fn2 var(--loop) infinite; }
+@keyframes fo1 { 0%, 12% { transform: rotateX(0); } 15%, 94% { transform: rotateX(-90deg); } 100% { transform: rotateX(0); } }
+@keyframes fn1 { 0%, 14% { transform: rotateX(90deg); } 17%, 94% { transform: rotateX(0); } 98%, 100% { transform: rotateX(90deg); } }
+@keyframes fo2 { 0%, 42% { transform: rotateX(0); } 45%, 94% { transform: rotateX(-90deg); } 100% { transform: rotateX(0); } }
+@keyframes fn2 { 0%, 44% { transform: rotateX(90deg); } 47%, 94% { transform: rotateX(0); } 98%, 100% { transform: rotateX(90deg); } }
+.dmsg { font: 600 0.9rem/1 var(--cond); letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); text-align: center; height: 1em; position: relative; }
+.dmsg span { position: absolute; inset: 0; opacity: 0; }
+.dmsg span:nth-child(1) { animation: m1 var(--loop) infinite; } .dmsg span:nth-child(2) { animation: m2 var(--loop) infinite; } .dmsg span:nth-child(3) { animation: m3 var(--loop) infinite; color: #7fe0a3; }
+@keyframes m1 { 0%, 2% { opacity: 0; } 5%, 28% { opacity: 1; } 31%, 100% { opacity: 0; } }
+@keyframes m2 { 0%, 32% { opacity: 0; } 35%, 58% { opacity: 1; } 61%, 100% { opacity: 0; } }
+@keyframes m3 { 0%, 64% { opacity: 0; } 68%, 94% { opacity: 1; } 98%, 100% { opacity: 0; } }
+.how ol { list-style: none; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+.how li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.how li::before { content: counter(s); width: 28px; height: 28px; display: grid; place-items: center; font: 700 1rem/1 var(--cond); color: #fff; background: var(--enamel); border-radius: 50%; }
+.how .foot3 { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.how .foot3 p { font-size: 0.88rem; opacity: 0.75; }
+
+@media (max-width: 960px) { .work { grid-template-columns: minmax(0, 1fr); } .tools { margin-left: 0; } }
+@media (max-width: 440px) { :root { --ch: 50px; } .sign { padding: 8px 20px 8px 16px; } .clock { width: 54px; height: 54px; } .cols, .row { grid-template-columns: minmax(0, 1fr) 50px 98px; gap: 6px; } .name { padding: 0 10px; letter-spacing: 0.1em; } .tabs button { padding: 9px 13px; } .nums b { font-size: 1.25rem; } .meter { font-size: 1.4rem; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="trainS" viewBox="0 0 150 30"><path d="M4 26V10c0-5 3-8 8-8h100c10 0 22 8 32 18 3 3 2 6-2 6z" fill="#e8e4d6"/><path d="M4 18h140" stroke="#d6402b" stroke-width="4"/><g fill="#1a2a3a"><rect x="12" y="6" width="14" height="8" rx="2"/><rect x="32" y="6" width="14" height="8" rx="2"/><rect x="52" y="6" width="14" height="8" rx="2"/><rect x="72" y="6" width="14" height="8" rx="2"/><rect x="92" y="6" width="14" height="8" rx="2"/><path d="M116 6h8c6 3 11 7 14 10h-22z"/></g><circle cx="24" cy="27" r="3" fill="#222"/><circle cx="60" cy="27" r="3" fill="#222"/><circle cx="104" cy="27" r="3" fill="#222"/><circle cx="130" cy="27" r="3" fill="#222"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="sign"><h1>Departures</h1><p id="sub"></p></div>
+    <svg class="clock" id="clk" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#222"/><circle cx="50" cy="50" r="43" fill="#f4f1e6"/><g id="ticks" stroke="#1a1a1a" stroke-width="2"></g><line id="hh" x1="50" y1="50" x2="50" y2="26" stroke="#111" stroke-width="4.5" stroke-linecap="round"/><line id="mh" x1="50" y1="50" x2="50" y2="14" stroke="#111" stroke-width="3" stroke-linecap="round"/><line id="sh" x1="50" y1="56" x2="50" y2="12" stroke="#d6402b" stroke-width="1.6"/><circle cx="50" cy="50" r="3" fill="#d6402b"/></svg>
+    <div class="tools">
+      <div class="tabs" role="group" aria-label="Mode"><button type="button" id="mDaily" aria-pressed="true">Daily</button><button type="button" id="mEndless" aria-pressed="false">Endless</button></div>
+      <div class="sizes" id="sizes" role="group" aria-label="Number of trains" hidden><button type="button" data-z="4" aria-pressed="false">4</button><button type="button" data-z="5" aria-pressed="true">5</button><button type="button" data-z="6" aria-pressed="false">6</button></div>
+      <button type="button" class="help" id="helpBtn" aria-label="How to play">?</button>
+    </div>
+  </header>
+
+  <main class="work">
+    <div class="left">
+      <section class="board" id="boardBox" aria-label="Departures board">
+        <div class="bh"><b>Departures</b><span class="lamp"><i></i><span id="lampT">Board not set</span></span></div>
+        <div class="cols"><span>Destination</span><span>Plat.</span><span>Time</span></div>
+        <div id="rows"></div>
+        <div class="bf"><span id="setN"></span><span>Tap a flap to change it</span></div>
+        <div class="track" aria-hidden="true"><svg class="train" viewBox="0 0 150 30"><use href="#trainS"/></svg></div>
+      </section>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <div class="slip" id="slip" hidden></div>
+    </div>
+    <div class="right">
+      <section class="plaque" aria-label="Notices">
+        <h2>Notices <small id="noteN"></small></h2>
+        <ol class="notes" id="notes"></ol>
+      </section>
+      <div class="acts" id="acts">
+        <button type="button" class="btn blue" id="check">Check board</button><button type="button" class="btn" id="hint">Hint</button><button type="button" class="btn dark" id="clear">Clear</button><button type="button" class="btn dark" id="giveup">Show answer</button>
+        <div class="meter"><span id="clk2">00:00</span><small id="hintn"></small></div>
+      </div>
+      <section class="record" aria-label="Record"><h3 id="recT">Record</h3><div class="nums" id="nums"></div></section>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="ov" hidden><div class="how" id="how" role="dialog" aria-modal="true" aria-labelledby="howT"></div></div>
+
+<script>
+// Departures rules. No DOM in here, so the same file runs in the page and in node.
+// A board is n trains. Each train has one platform (0..n-1) and one departure slot (0..n-1), all different.
+
+const EPOCH = '2026-11-09';
+const CITIES = ['Lisbon', 'Vienna', 'Prague', 'Oslo', 'Zurich', 'Madrid', 'Dublin', 'Athens', 'Warsaw', 'Berlin', 'Geneva', 'Seville', 'Lyon', 'Turin', 'Porto', 'Bruges', 'Krakow', 'Naples', 'Riga', 'Tallinn', 'Bern', 'Basel', 'Graz', 'Brno', 'Split', 'Nice', 'Cork', 'Bath', 'York', 'Leeds', 'Derby', 'Chester', 'Perth', 'Ghent', 'Genoa', 'Milan', 'Rome', 'Paris', 'Hamburg', 'Munich', 'Cologne', 'Dresden', 'Malmo', 'Bergen', 'Turku', 'Valencia', 'Cardiff', 'Lille', 'Nantes', 'Verona'];
+
+function hashStr(s) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed | 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function dateKey(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function dayNumber(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  const [ey, em, ed] = EPOCH.split('-').map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(ey, em - 1, ed)) / 86400000) + 1;
+}
+function fmtTime(ms) {
+  const s = Math.floor(ms / 1000), p = (x) => String(x).padStart(2, '0');
+  return p(Math.floor(s / 60)) + ':' + p(s % 60);
+}
+function shuffle(a, rnd) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+// A clue is { k, a, b, v } plus the trains it mentions. holds() answers "is this still possible?" for a
+// partly filled board (P and T are -1 where a train is not placed yet).
+function holds(c, P, T, n) {
+  switch (c.k) {
+    case 'plat': return P[c.a] < 0 || P[c.a] === c.v;
+    case 'nplat': return P[c.a] < 0 || P[c.a] !== c.v;
+    case 'time': return T[c.a] < 0 || T[c.a] === c.v;
+    case 'ntime': return T[c.a] < 0 || T[c.a] !== c.v;
+    case 'before': return T[c.a] < 0 || T[c.b] < 0 || T[c.a] < T[c.b];
+    case 'lowerp': return P[c.a] < 0 || P[c.b] < 0 || P[c.a] < P[c.b];
+    case 'near': return P[c.a] < 0 || P[c.b] < 0 || Math.abs(P[c.a] - P[c.b]) === 1;
+    case 'after1': return T[c.a] < 0 || T[c.b] < 0 || T[c.a] === T[c.b] + 1;
+    case 'tp': { // the train at slot v is on platform b
+      for (let t = 0; t < n; t++) if (P[t] >= 0 && ((T[t] === c.v) !== (P[t] === c.b))) return false;
+      return true;
+    }
+  }
+  return true;
+}
+function countSolutions(n, clues, limit) {
+  const P = new Array(n).fill(-1), T = new Array(n).fill(-1), up = new Array(n).fill(false), ut = new Array(n).fill(false);
+  let found = 0;
+  function go(t) {
+    if (found >= limit) return;
+    if (t === n) { found++; return; }
+    for (let p = 0; p < n; p++) {
+      if (up[p]) continue;
+      for (let s = 0; s < n; s++) {
+        if (ut[s]) continue;
+        P[t] = p; T[t] = s; up[p] = ut[s] = true;
+        let ok = true;
+        for (let i = 0; i < clues.length; i++) if (!holds(clues[i], P, T, n)) { ok = false; break; }
+        if (ok) go(t + 1);
+        up[p] = ut[s] = false; P[t] = T[t] = -1;
+        if (found >= limit) return;
+      }
+    }
+  }
+  go(0);
+  return found;
+}
+
+function makePuzzle(seedStr, size) {
+  const rnd = mulberry32(hashStr('departures/' + seedStr + '/' + size));
+  const n = size;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const names = shuffle(CITIES.slice(), rnd).slice(0, n);
+    const sp = shuffle(Array.from({ length: n }, (_, i) => i), rnd), st = shuffle(Array.from({ length: n }, (_, i) => i), rnd);
+    const P = sp, T = st; // train t is on platform P[t] and leaves in slot T[t]
+    const step = [10, 15, 20][Math.floor(rnd() * 3)], base = 8 * 60 + Math.floor(rnd() * 10) * 5;
+    const times = Array.from({ length: n }, (_, i) => { const m = base + i * step; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); });
+    const trainAt = (s) => T.indexOf(s), trainOn = (p) => P.indexOf(p);
+    const pool = [];
+    for (let a = 0; a < n; a++) {
+      pool.push({ k: 'plat', a, v: P[a] }, { k: 'time', a, v: T[a] });
+      for (let v = 0; v < n; v++) { if (v !== P[a] && rnd() < 0.5) pool.push({ k: 'nplat', a, v }); if (v !== T[a] && rnd() < 0.5) pool.push({ k: 'ntime', a, v }); }
+      for (let b = 0; b < n; b++) {
+        if (a === b) continue;
+        if (T[a] < T[b]) pool.push({ k: 'before', a, b });
+        if (P[a] < P[b]) pool.push({ k: 'lowerp', a, b });
+        if (a < b && Math.abs(P[a] - P[b]) === 1) pool.push({ k: 'near', a, b });
+        if (T[a] === T[b] + 1) pool.push({ k: 'after1', a, b });
+      }
+    }
+    for (let s = 0; s < n; s++) pool.push({ k: 'tp', v: s, b: P[trainAt(s)] });
+    shuffle(pool, rnd);
+    // give the relational clues a head start so the board is not just a list of answers
+    pool.forEach((c) => { c.key = ((c.k === 'plat' || c.k === 'time') ? 1 : 0) + rnd() * 1.4; });
+    pool.sort((x, y) => x.key - y.key);
+    let clues = [];
+    for (const c of pool) { clues.push(c); if (countSolutions(n, clues, 2) === 1) break; }
+    if (countSolutions(n, clues, 2) !== 1) continue;
+    const order = shuffle(clues.map((_, i) => i), rnd);
+    let keep = clues.slice();
+    for (const i of order) {
+      const c = clues[i], without = keep.filter((x) => x !== c);
+      if (countSolutions(n, without, 2) === 1) keep = without;
+    }
+    if (keep.length < n + 1 || keep.length > n * 2 + 2) continue;
+    keep.forEach((c) => { c.text = clueText(c, names, times); });
+    return { n, names, times, P, T, clues: shuffle(keep, rnd) };
+  }
+  throw new Error('no board for ' + seedStr);
+}
+function clueText(c, names, times) {
+  const A = c.a !== undefined ? names[c.a] : '', B = c.b !== undefined ? names[c.b] : '';
+  switch (c.k) {
+    case 'plat': return 'The ' + A + ' train leaves from platform ' + (c.v + 1) + '.';
+    case 'nplat': return 'The ' + A + ' train does not leave from platform ' + (c.v + 1) + '.';
+    case 'time': return 'The ' + A + ' train leaves at ' + times[c.v] + '.';
+    case 'ntime': return 'The ' + A + ' train does not leave at ' + times[c.v] + '.';
+    case 'before': return 'The ' + A + ' train leaves before the ' + B + ' train.';
+    case 'lowerp': return 'The ' + A + ' train uses a lower platform number than the ' + B + ' train.';
+    case 'near': return 'The ' + A + ' and ' + B + ' trains use platforms right next to each other.';
+    case 'after1': return 'The ' + A + ' train leaves straight after the ' + B + ' train, with none in between.';
+    case 'tp': return 'The ' + times[c.v] + ' train leaves from platform ' + (c.b + 1) + '.';
+  }
+  return '';
+}
+
+// board = { p: [0..n per train, 0 = blank], t: [...] }  (1-based, so 0 can mean blank)
+function wrongCount(puz, p, t) {
+  let right = 0, filled = 0;
+  for (let i = 0; i < puz.n; i++) { if (p[i]) { filled++; if (p[i] === puz.P[i] + 1) right++; } if (t[i]) { filled++; if (t[i] === puz.T[i] + 1) right++; } }
+  return { right, filled };
+}
+function isSolved(puz, p, t) { const r = wrongCount(puz, p, t); return r.right === puz.n * 2; }
+function firstWrong(puz, p, t) {
+  for (let i = 0; i < puz.n; i++) { if (p[i] !== puz.P[i] + 1) return { row: i, col: 'p' }; if (t[i] !== puz.T[i] + 1) return { row: i, col: 't' }; }
+  return null;
+}
+function shareText(no, mode, ms, hints, checks) {
+  return 'DEPARTURES ' + (mode === 'daily' ? 'No. ' + no : 'Endless') + '  ' + fmtTime(ms) + ' · ' + (hints ? hints + (hints === 1 ? ' hint' : ' hints') : 'no hints') + ' · ' + (checks ? checks + (checks === 1 ? ' check' : ' checks') : 'no checks');
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { EPOCH, hashStr, mulberry32, dateKey, dayNumber, fmtTime, makePuzzle, countSolutions, wrongCount, isSolved, firstWrong, shareText };
+}
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'departures:v1';
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var $ = function (id) { return document.getElementById(id); };
+  var todayKey = dateKey(new Date()), dayNo = dayNumber(todayKey);
+  var EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+  try {
+    var g = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="7"/><feColorMatrix values="0 0 0 0 0.2  0 0 0 0 0.25  0 0 0 0 0.22  0 0 0 0.16 0"/></filter><rect width="220" height="220" filter="url(#g)"/></svg>';
+    document.documentElement.style.setProperty('--grain', 'url("data:image/svg+xml;base64,' + btoa(g) + '")');
+  } catch (e) {}
+  (function () { /* station clock */
+    var t = '', i; for (i = 0; i < 12; i++) { var a = i * Math.PI / 6; t += '<line x1="' + (50 + Math.sin(a) * 37).toFixed(1) + '" y1="' + (50 - Math.cos(a) * 37).toFixed(1) + '" x2="' + (50 + Math.sin(a) * 41).toFixed(1) + '" y2="' + (50 - Math.cos(a) * 41).toFixed(1) + '"/>'; }
+    $('ticks').innerHTML = t;
+    function set() { var d = new Date(), s = d.getSeconds(), m = d.getMinutes() + s / 60, h = d.getHours() % 12 + m / 60; $('sh').setAttribute('transform', 'rotate(' + s * 6 + ' 50 50)'); $('mh').setAttribute('transform', 'rotate(' + m * 6 + ' 50 50)'); $('hh').setAttribute('transform', 'rotate(' + h * 30 + ' 50 50)'); }
+    set(); setInterval(set, 1000);
+  })();
+
+  function anim(el, kf, o) {
+    if (reduce || !el || !el.animate) return null;
+    var opt = { duration: 450, easing: EASE, fill: 'backwards' };
+    for (var k in o) opt[k] = o[k];
+    try { return el.animate(kf, opt); } catch (e) { return null; }
+  }
+
+  /* ---------- split flaps ---------- */
+  function flapHtml() { return '<span class="fl"><span class="h t"><span></span></span><span class="h b"><span></span></span><span class="h ft"><span></span></span><span class="h fb"><span></span></span></span>'; }
+  function flapSet(btn, txt, instant) {
+    var el = btn.firstChild, old = btn.getAttribute('data-v');
+    var t = el.children[0].firstChild, b = el.children[1].firstChild, ft = el.children[2], fb = el.children[3];
+    btn.setAttribute('data-v', txt);
+    btn.classList.toggle('blank', txt === '–' || txt === '––:––');
+    if (instant || reduce || old === null || old === txt || !ft.animate) { t.textContent = txt; b.textContent = txt; return; }
+    if (btn._busy) { btn._busy.forEach(function (a) { try { a.cancel(); } catch (e) {} }); }
+    t.textContent = txt; b.textContent = old; ft.firstChild.textContent = old; fb.firstChild.textContent = txt;
+    ft.style.display = 'block'; fb.style.display = 'none';
+    var a1 = ft.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }], { duration: 120, easing: 'ease-in', fill: 'forwards' });
+    btn._busy = [a1];
+    a1.onfinish = function () {
+      ft.style.display = 'none'; fb.style.display = 'block';
+      var a2 = fb.animate([{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }], { duration: 170, easing: 'cubic-bezier(0.3, 1.4, 0.5, 1)', fill: 'forwards' });
+      btn._busy = [a2];
+      a2.onfinish = function () { b.textContent = txt; fb.style.display = 'none'; try { a1.cancel(); a2.cancel(); } catch (e) {} };
+    };
+  }
+
+  /* ---------- saved ---------- */
+  function clean(s) { s = s || {}; return { played: +s.played || 0, won: +s.won || 0, streak: +s.streak || 0, best: +s.best || 0, lastWin: +s.lastWin || 0 }; }
+  function load() {
+    var o = null;
+    try { var r = localStorage.getItem(KEY); if (r) o = JSON.parse(r); } catch (e) { o = null; }
+    o = (o && typeof o === 'object') ? o : {};
+    return { seen: !!o.seen, es: [4, 5, 6].indexOf(+o.es) >= 0 ? +o.es : 5, sd: clean(o.sd), se: clean(o.se), d: o.d || null, e: o.e || null };
+  }
+  var store = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function newSeed() { return 'r' + Math.random().toString(36).slice(2, 9); }
+
+  /* ---------- state ---------- */
+  var S = { mode: 'daily', size: 5, seed: '', puz: null, p: [], t: [], lock: {}, strike: {}, sel: null, ms: 0, t0: 0, hints: 0, checks: 0, done: false, won: false, gaveUp: false };
+  var timerOn = false, giveTimer = 0, btns = {}, rowEls = [];
+  function rec() { return S.mode === 'daily' ? store.d : store.e; }
+  function stats() { return S.mode === 'daily' ? store.sd : store.se; }
+  function elapsed() { return S.ms + (timerOn ? Date.now() - S.t0 : 0); }
+  function startClock() { if (!timerOn && !S.done) { S.t0 = Date.now(); timerOn = true; } }
+  function stopClock() { if (timerOn) { S.ms += Date.now() - S.t0; timerOn = false; } }
+  function save1() { var r = rec(); if (!r) return; r.p = S.p; r.t = S.t; r.lk = Object.keys(S.lock); r.st = Object.keys(S.strike).map(Number); r.ms = elapsed(); r.hints = S.hints; r.checks = S.checks; r.done = S.done; r.won = S.won; r.gu = S.gaveUp; save(); }
+  function show(col, v) { return col === 'p' ? (v ? String(v) : '–') : (v ? S.puz.times[v - 1] : '––:––'); }
+
+  /* ---------- build ---------- */
+  function build() {
+    var p = S.puz, h = ''; btns = {}; rowEls = [];
+    p.names.forEach(function (nm, i) {
+      h += '<div class="row" data-r="' + i + '"><div class="name">' + nm + '</div><button type="button" class="fbtn" data-r="' + i + '" data-c="p">' + flapHtml() + '</button><button type="button" class="fbtn" data-r="' + i + '" data-c="t">' + flapHtml() + '</button></div>';
+    });
+    $('rows').innerHTML = h;
+    var bs = $('rows').querySelectorAll('.fbtn'); for (var k = 0; k < bs.length; k++) btns[bs[k].getAttribute('data-r') + bs[k].getAttribute('data-c')] = bs[k];
+    rowEls = Array.prototype.slice.call($('rows').children);
+    var n = '';
+    p.clues.forEach(function (c, i) { n += '<li><button type="button" data-i="' + i + '"><span>' + c.text + '</span></button></li>'; });
+    $('notes').innerHTML = n; $('noteN').textContent = p.clues.length + ' notices';
+  }
+  function label(r, c) { return (c === 'p' ? 'Platform' : 'Time') + ' for ' + S.puz.names[r] + ': ' + (S[c][r] ? show(c, S[c][r]) : 'not set'); }
+  function paint(instant) {
+    var p = S.puz, n = p.n, dup = { p: {}, t: {} };
+    ['p', 't'].forEach(function (c) { var seen = {}; S[c].forEach(function (v, i) { if (v) { (seen[v] = seen[v] || []).push(i); } }); Object.keys(seen).forEach(function (v) { if (seen[v].length > 1) seen[v].forEach(function (i) { dup[c][i] = 1; }); }); });
+    var set = 0;
+    for (var r = 0; r < n; r++) {
+      ['p', 't'].forEach(function (c) {
+        var b = btns[r + c], v = S[c][r]; if (v) set++;
+        flapSet(b, show(c, v), instant);
+        b.classList.toggle('lock', !!S.lock[r + c]); b.classList.toggle('dupe', !!dup[c][r]); b.classList.toggle('sel', S.sel === r + c && !S.done);
+        b.setAttribute('aria-label', label(r, c));
+      });
+      rowEls[r].classList.toggle('ok', S.done && S.won);
+    }
+    var items = $('notes').querySelectorAll('button'); for (var i = 0; i < items.length; i++) items[i].classList.toggle('done', !!S.strike[i]);
+    $('setN').innerHTML = '<b>' + set + '</b> of ' + (n * 2) + ' flaps set';
+    $('lampT').textContent = S.done ? (S.won ? 'All aboard' : 'Board shown') : set === 0 ? 'Board not set' : set < n * 2 ? 'Boarding' : 'Check the board';
+    $('hintn').textContent = (S.hints || S.checks) ? [S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : '', S.checks ? S.checks + (S.checks === 1 ? ' check' : ' checks') : ''].filter(Boolean).join(' · ') : '';
+    $('clear').disabled = S.done || !(S.p.concat(S.t).some(Boolean));
+    $('hint').disabled = S.done; $('check').disabled = S.done || !set;
+  }
+  function say(t) { $('msg').textContent = t || ''; }
+
+  /* ---------- play ---------- */
+  function bump(r, c, d) {
+    if (S.done) return; var k = r + c; startClock(); S.sel = k;
+    if (S.lock[k]) { anim(btns[k], [{ transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'none' }], { duration: 260, fill: 'none' }); return; }
+    var n = S.puz.n, v = S[c][r] + d; if (v > n) v = 0; if (v < 0) v = n;
+    S[c][r] = v; say(''); paint(); save1(); win();
+  }
+  function setVal(r, c, v) {
+    if (S.done || S.lock[r + c] || v > S.puz.n) return; startClock(); S.sel = r + c; S[c][r] = v; say(''); paint(); save1(); win();
+  }
+  function win() { if (isSolved(S.puz, S.p, S.t)) finish(true); }
+  $('rows').addEventListener('click', function (e) { var b = e.target.closest('.fbtn'); if (b) bump(+b.getAttribute('data-r'), b.getAttribute('data-c'), e.shiftKey ? -1 : 1); });
+  $('rows').addEventListener('keydown', function (e) {
+    var b = e.target.closest('.fbtn'); if (!b) return;
+    var r = +b.getAttribute('data-r'), c = b.getAttribute('data-c');
+    if (e.key === 'ArrowUp') { e.preventDefault(); bump(r, c, 1); } else if (e.key === 'ArrowDown') { e.preventDefault(); bump(r, c, -1); }
+    else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); setVal(r, c, 0); }
+    else if (/^[1-9]$/.test(e.key)) { e.preventDefault(); setVal(r, c, +e.key); }
+  });
+  $('notes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var i = +b.getAttribute('data-i'); if (S.strike[i]) delete S.strike[i]; else S.strike[i] = 1; paint(); save1(); });
+  $('check').addEventListener('click', function () {
+    if (S.done) return; startClock(); S.checks++;
+    var r = wrongCount(S.puz, S.p, S.t), n = S.puz.n * 2;
+    say(r.right + ' of ' + n + ' flaps are right' + (r.filled > r.right ? '. ' + (r.filled - r.right) + ' set wrong.' : '.'));
+    paint(); save1();
+  });
+  $('hint').addEventListener('click', function () {
+    if (S.done) return; startClock();
+    var w = firstWrong(S.puz, S.p, S.t); if (!w) return;
+    var k = w.row + w.col, v = w.col === 'p' ? S.puz.P[w.row] + 1 : S.puz.T[w.row] + 1;
+    var c = w.col; for (var i = 0; i < S.puz.n; i++) if (i !== w.row && S[c][i] === v && !S.lock[i + c]) S[c][i] = 0;
+    S[c][w.row] = v; S.lock[k] = true; S.hints++; S.sel = k;
+    say('Set for you: ' + S.puz.names[w.row] + (c === 'p' ? ', platform ' : ', ') + show(c, v) + '.');
+    paint(); save1(); anim(btns[k], [{ transform: 'scale(1.12)' }, { transform: 'none' }], { duration: 500, fill: 'none' }); win();
+  });
+  $('clear').addEventListener('click', function () {
+    if (S.done) return;
+    for (var i = 0; i < S.puz.n; i++) { if (!S.lock[i + 'p']) S.p[i] = 0; if (!S.lock[i + 't']) S.t[i] = 0; }
+    say(''); paint(); save1();
+  });
+  $('giveup').addEventListener('click', function () {
+    if (S.done) return; var b = this;
+    if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Sure?'; clearTimeout(giveTimer); giveTimer = setTimeout(function () { b.removeAttribute('data-sure'); b.textContent = 'Show answer'; }, 3000); return; }
+    S.gaveUp = true; S.p = S.puz.P.map(function (x) { return x + 1; }); S.t = S.puz.T.map(function (x) { return x + 1; }); paint(); finish(false);
+  });
+  document.addEventListener('keydown', function (e) { if (!$('ov').hidden && e.key === 'Escape') closeHow(); });
+
+  /* ---------- finishing ---------- */
+  function finish(won) {
+    stopClock(); S.done = true; S.won = won; S.sel = null;
+    var st = stats(); st.played++;
+    if (won) { st.won++; st.streak = (S.mode === 'daily') ? ((st.lastWin === dayNo - 1 || st.lastWin === dayNo) ? st.streak + 1 : 1) : st.streak + 1; if (S.mode === 'daily') st.lastWin = dayNo; if (!st.best || S.ms < st.best) st.best = S.ms; } else st.streak = 0;
+    save1(); save(); paint(); $('acts').hidden = true; say(won ? 'All aboard. Every train is on the right platform at the right time.' : 'This is the real board.');
+    $('boardBox').classList.toggle('won', won);
+    if (won) rowEls.forEach(function (r, i) { anim(r, [{ transform: 'none' }, { transform: 'translateY(-4px)', offset: 0.4 }, { transform: 'none' }], { duration: 520, delay: 200 + i * 120, fill: 'none' }); });
+    setTimeout(function () { showSlip(false); renderRecord(); }, reduce || !won ? 0 : 1300);
+  }
+  function showSlip(instant) {
+    var sl = $('slip'), txt = shareText(dayNo, S.mode, S.ms, S.hints, S.checks);
+    sl.className = 'slip' + (S.won ? '' : ' lost');
+    sl.innerHTML = '<h2>' + (S.won ? 'All aboard' : 'Answer shown') + '</h2><p>' + (S.won ? 'Every train left on time.' : 'You gave up on this board.') + '</p>' +
+      '<div class="stats"><div><b>' + fmtTime(S.ms) + '</b><span>Time</span></div><div><b>' + S.hints + '</b><span>Hints</span></div><div><b>' + S.checks + '</b><span>Checks</span></div></div>' +
+      '<div class="foot"><button type="button" class="btn" id="copy">Copy result</button>' + (S.mode === 'daily' ? '<button type="button" class="btn ghost" id="toEnd">Play endless</button>' : '<button type="button" class="btn blue" id="nextM">Next board</button><button type="button" class="btn ghost" id="toDaily">Back to daily</button>') + '</div>' + (S.mode === 'daily' ? '<p class="next" id="nextin"></p>' : '');
+    sl.hidden = false;
+    $('copy').addEventListener('click', function () { var b = this, done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy result'; }, 1600); }; try { navigator.clipboard.writeText(txt).then(done, function () { fb(txt); done(); }); } catch (e) { fb(txt); done(); } });
+    var a = $('toEnd'); if (a) a.addEventListener('click', function () { go('endless'); });
+    var n = $('nextM'); if (n) n.addEventListener('click', function () { store.e = null; init('endless'); });
+    var d = $('toDaily'); if (d) d.addEventListener('click', function () { go('daily'); });
+    tick();
+    if (!instant) { if (window.innerWidth <= 960 && !reduce) { try { sl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} } anim(sl, [{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 700 }); }
+  }
+  function fb(t) { var a = document.createElement('textarea'); a.value = t; a.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(a); }
+  function renderRecord() {
+    var st = stats();
+    $('recT').textContent = 'Record · ' + (S.mode === 'daily' ? 'Daily' : 'Endless');
+    $('nums').innerHTML = '<div><b>' + st.won + '</b><span>Solved</span></div><div><b>' + st.streak + '</b><span>Streak</span></div><div><b>' + (st.best ? fmtTime(st.best) : '–') + '</b><span>Best time</span></div><div><b>' + st.played + '</b><span>Played</span></div>';
+  }
+
+  /* ---------- modes ---------- */
+  function init(mode) {
+    S.mode = mode; stopClock();
+    $('mDaily').setAttribute('aria-pressed', mode === 'daily'); $('mEndless').setAttribute('aria-pressed', mode === 'endless');
+    $('sizes').hidden = mode !== 'endless';
+    var r = rec();
+    if (mode === 'daily') { if (!r || r.key !== todayKey) { store.d = r = { key: todayKey, ms: 0, hints: 0, checks: 0, done: false, won: false }; save(); } S.seed = todayKey; S.size = 5; }
+    else { if (!r || !r.seed) { store.e = r = { seed: newSeed(), size: store.es, ms: 0, hints: 0, checks: 0, done: false, won: false }; save(); } S.seed = r.seed; S.size = r.size; }
+    var bs = $('sizes').children; for (var z = 0; z < bs.length; z++) bs[z].setAttribute('aria-pressed', +bs[z].getAttribute('data-z') === S.size);
+    S.puz = makePuzzle(S.seed, S.size); var n = S.size;
+    function arr(a) { var o = []; for (var i = 0; i < n; i++) o.push(a && a[i] >= 0 && a[i] <= n ? +a[i] : 0); return o; }
+    S.p = arr(r.p); S.t = arr(r.t); S.lock = {}; (r.lk || []).forEach(function (k) { S.lock[k] = true; }); S.strike = {}; (r.st || []).forEach(function (i) { S.strike[i] = 1; });
+    S.ms = +r.ms || 0; S.hints = +r.hints || 0; S.checks = +r.checks || 0; S.done = !!r.done; S.won = !!r.won; S.gaveUp = !!r.gu; S.sel = null; timerOn = false;
+    $('sub').textContent = mode === 'daily' ? 'No. ' + dayNo + ' · ' + new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Endless · ' + n + ' trains';
+    var gb = $('giveup'); gb.removeAttribute('data-sure'); gb.textContent = 'Show answer';
+    $('slip').hidden = true; $('acts').hidden = S.done; $('boardBox').classList.remove('won'); say('');
+    build(); paint(true); renderRecord(); $('clk2').textContent = fmtTime(S.ms);
+    if (S.done) { $('boardBox').classList.toggle('won', S.won); say(S.won ? 'All aboard. Every train is on the right platform at the right time.' : 'This is the real board.'); showSlip(true); }
+    else {
+      /* the board flips itself in, one flap at a time */
+      var k = 0; for (var i = 0; i < n; i++) ['p', 't'].forEach(function (c) { var b = btns[i + c], ii = i; if (!reduce) { flapSet(b, '', true); setTimeout(function () { if (!S.done) flapSet(b, show(c, S[c][ii])); }, 250 + (k++) * 70); } });
+    }
+    anim($('boardBox'), [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], { duration: 650 });
+    anim($('rows'), [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+  }
+  function go(m) { init(m); try { location.hash = m; } catch (e) {} }
+  window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if ((h === 'daily' || h === 'endless') && h !== S.mode) init(h); });
+  $('mDaily').addEventListener('click', function () { go('daily'); }); $('mEndless').addEventListener('click', function () { go('endless'); });
+  $('sizes').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var z = +b.getAttribute('data-z'); if (z === S.size) return; store.es = z; store.e = null; init('endless'); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { if (timerOn) { stopClock(); save1(); } } else if (!S.done && S.p.concat(S.t).some(Boolean)) startClock(); });
+  window.addEventListener('pagehide', function () { if (!S.done) { stopClock(); save1(); } });
+
+  /* ---------- how to play ---------- */
+  function howHtml() {
+    var h = '<h2 id="howT">How to play</h2><p class="lead">Each train needs the right platform and the right time.</p><div class="demo"><div class="dn"><p><span>The Leeds train leaves from platform 2.</span></p><p><span>The Bath train leaves at 09:00.</span></p></div>';
+    h += '<div class="drow"><div class="dname">Leeds</div><div class="df a"><span class="o">–</span><span class="nw">2</span></div><div class="df"><span class="o">––:––</span></div></div>';
+    h += '<div class="drow"><div class="dname">Bath</div><div class="df"><span class="o">–</span></div><div class="df b"><span class="o">––:––</span><span class="nw">09:00</span></div></div>';
+    h += '<div class="dmsg"><span>Read a notice</span><span>Tap the flap to match it</span><span>Cross it off and carry on</span></div></div>';
+    h += '<ol><li><span><b>Read the notices.</b> Each one is a fact about the trains.</span></li><li><span><b>Tap a flap to flip it.</b> Platforms and times each go with one train only. Tap a notice to cross it off.</span></li><li><span><b>Fill the whole board.</b> "Check board" says how many flaps are right. A hint sets one for you.</span></li></ol>';
+    h += '<div class="foot3"><p>Daily: same board for everyone. Endless: 4, 5 or 6 trains.</p><button type="button" class="btn blue" id="howGo">Got it</button></div>';
+    return h;
+  }
+  function openHow() { $('how').innerHTML = howHtml(); $('ov').hidden = false; store.seen = true; save(); $('howGo').addEventListener('click', closeHow); $('howGo').focus({ preventScroll: true }); }
+  function closeHow() {
+    var ov = $('ov');
+    function fin() { ov.hidden = true; $('how').innerHTML = ''; try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {} }
+    var a = anim(ov, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: 'ease-out', fill: 'forwards' });
+    if (a) a.onfinish = function () { a.cancel(); fin(); }; else fin();
+  }
+  $('helpBtn').addEventListener('click', openHow);
+  $('ov').addEventListener('click', function (e) { if (e.target === $('ov')) closeHow(); });
+
+  /* ---------- clock ---------- */
+  function tick() {
+    var now = new Date(), k = dateKey(now);
+    if (k !== todayKey) { todayKey = k; dayNo = dayNumber(k); store.d = null; save(); if (S.mode === 'daily') init('daily'); return; }
+    if (timerOn) $('clk2').textContent = fmtTime(elapsed());
+    var el = $('nextin'); if (!el) return;
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), s = Math.max(0, Math.floor((next - now) / 1000)), p = function (n) { return String(n).padStart(2, '0'); };
+    el.textContent = 'Next board in ' + p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+  }
+  setInterval(tick, 500);
+
+  var h0 = location.hash.replace('#', '');
+  init(h0 === 'endless' ? 'endless' : 'daily');
+  if (!store.seen) setTimeout(function () { if (!store.seen) openHow(); }, 350);
+})();
+</script>
